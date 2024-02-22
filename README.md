@@ -1,25 +1,16 @@
-# Rewrite recipe starter
+# Miscellaneous Rewrite Recipes
 
-This repository serves as a template for building your own recipe JARs and publishing them to a repository where they can be applied on [app.moderne.io](https://app.moderne.io) against all the public OSS code that is included there.
+[![ci](https://github.com/timo-a/rewrite-recipe-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/timo-a/rewrite-recipe-starter/actions/workflows/ci.yml)
+[![Apache 2.0](https://img.shields.io/github/license/openrewrite/rewrite-migrate-java.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.timo-a/rewrite-recipe-starter.svg)](https://mvnrepository.com/artifact/io.github.timo-a/rewrite-recipe-starter)
 
-We've provided a sample recipe (NoGuavaListsNewArray) and a sample test class. Both of these exist as placeholders, and they should be replaced by whatever recipe you are interested in writing.
-
-To begin, fork this repository and customize it by:
-
-1. Changing the root project name in `settings.gradle.kts`.
-2. Changing the `group` in `build.gradle.kts`.
-3. Changing the package structure from `io.github.timo-a` to whatever you want.
+This repository collects my custom recipes, primarily ones that add lombok annotations to projects that started without it.  
+This repository is still young and may e.g. be rebased, the [releases on maven central](https://mvnrepository.com/artifact/io.github.timo-a/rewrite-recipe-starter) however are immutable.
 
 ## Getting started
 
-Familiarize yourself with the [OpenRewrite documentation](https://docs.openrewrite.org/), in particular the [concepts & explanations](https://docs.openrewrite.org/concepts-explanations) op topics like the [lossless semantic trees](https://docs.openrewrite.org/concepts-explanations/lossless-semantic-trees), [recipes](https://docs.openrewrite.org/concepts-explanations/recipes) and [visitors](https://docs.openrewrite.org/concepts-explanations/visitors).
-
-You might be interested to watch some of the [videos available on OpenRewrite and Moderne](https://www.youtube.com/@moderne-auto-remediation).
-
-Once you want to dive into the code there is a [comprehensive getting started guide](https://docs.openrewrite.org/authoring-recipes/recipe-development-environment)
-available in the OpenRewrite docs that provides more details than the below README.
-
-## Reference recipes
+In order to run any of these recipes on your project you need to use either maven or gradle as a build tool.
+The [OpenRewrite Docs](https://docs.openrewrite.org/running-recipes) are a great start.
 
 * [META-INF/rewrite/stringutils.yml](./src/main/resources/META-INF/rewrite/stringutils.yml) - A declarative YAML recipe that replaces usages of `org.springframework.util.StringUtils` with `org.apache.commons.lang3.StringUtils`.
   * [UseApacheStringUtilsTest](./src/test/java/com/yourorg/UseApacheStringUtilsTest.java) - A test class for the `io.github.timo-a.UseApacheStringUtils` recipe.
@@ -59,6 +50,8 @@ Replace the groupId, artifactId, recipe name, and version in the below snippets 
 
 In the pom.xml of a different project you wish to test your recipe out in, make your recipe module a plugin dependency of rewrite-maven-plugin:
 
+### Quickstart
+ Copy what you need from here:
 ```xml
 <project>
     <build>
@@ -69,14 +62,14 @@ In the pom.xml of a different project you wish to test your recipe out in, make 
                 <version>RELEASE</version>
                 <configuration>
                     <activeRecipes>
-                        <recipe>io.github.timoa.NoGuavaListsNewArrayList</recipe>
+                        <recipe>io.github.timoa.lombok.ConvertNoArgsConstructor</recipe>
                     </activeRecipes>
                 </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>io.github.timo-a</groupId>
-                        <artifactId>rewrite-recipe-starter</artifactId>
-                        <version>0.1.0-SNAPSHOT</version>
+                        <artifactId>rewrite-misc-recipes</artifactId>
+                        <version>0.0.6</version><!-- see above for the latest version -->
                     </dependency>
                 </dependencies>
             </plugin>
@@ -85,31 +78,10 @@ In the pom.xml of a different project you wish to test your recipe out in, make 
 </project>
 ```
 
-Unlike Maven, Gradle must be explicitly configured to resolve dependencies from Maven local.
-The root project of your Gradle build, make your recipe module a dependency of the `rewrite` configuration:
 
-```groovy
-plugins {
-    id("java")
-    id("org.openrewrite.rewrite") version("latest.release")
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
-dependencies {
-    rewrite("io.github.timo-a:rewrite-recipe-starter:latest.integration")
-}
-
-rewrite {
-    activeRecipe("io.github.timoa.NoGuavaListsNewArrayList")
-}
-```
-
-Now you can run `mvn rewrite:run` or `gradlew rewriteRun` to run your recipe.
-
+---
+Todo: clean up the following parts of the original Readme.
+  
 ## Publishing to Artifact Repositories
 
 This project is configured to publish to Moderne's open artifact repository (via the `publishing` task at the bottom of
