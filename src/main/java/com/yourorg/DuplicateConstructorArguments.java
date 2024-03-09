@@ -57,14 +57,18 @@ public class DuplicateConstructorArguments extends Recipe {
             @Override
             public J.Block visitBlock(J.Block block, ExecutionContext executionContext) {
                 //if I skip the call to super, nothing is changed. But with this call it takes 2 cycles
-                J.Block superBlock = super.visitBlock(block, executionContext);
-                if (superBlock.getStatements().size() == 1) {
+                if (block.getStatements().size() == 1) {
+
+                    List<Statement> preAnalysis = block.getStatements();
+
+                    J.Block superBlock = super.visitBlock(block, executionContext);//this should visit the constructor
+
                     List<Statement> resultingStatements = new ArrayList<>();
-                    resultingStatements.add(modifyConstructor(superBlock.getStatements().get(0)));
+                    resultingStatements.add(superBlock.getStatements().get(0));
 
                     return superBlock.withStatements(resultingStatements);
                 } else {
-                    return superBlock;
+                    return super.visitBlock(block, executionContext);
                 }
             }
 
@@ -82,6 +86,16 @@ public class DuplicateConstructorArguments extends Recipe {
                 Statement multiConstructor = vds.withVariables(newList);
 
                 return multiConstructor;
+            }
+
+            @Override
+            public J.NewClass visitNewClass(J.NewClass newClass, ExecutionContext executionContext) {
+                Expression e = newClass.getArguments().get(0);
+                Expression f = e.withId(UUID.randomUUID());//in case there is an issue with two elements having the same id
+
+                return super.visitNewClass(
+                        newClass.withArguments(Arrays.asList(e,f)), //new A(...)
+                        executionContext);
             }
         };
     }
