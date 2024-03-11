@@ -72,22 +72,6 @@ public class DuplicateConstructorArguments extends Recipe {
                 }
             }
 
-            private Statement modifyConstructor(Statement statement) {
-
-                J.VariableDeclarations vds = (J.VariableDeclarations) statement;
-                J.VariableDeclarations.NamedVariable nv = vds.getVariables().get(0);//a = new A()
-                Expression e = ((J.NewClass) nv.getInitializer()).getArguments().get(0);
-                Expression f = e.withId(UUID.randomUUID());//in case there is an issue with two elements having the same id
-                J.NewClass construction = ((J.NewClass) nv.getInitializer()).withArguments(Arrays.asList(e,f)); //new A(...)
-
-                List<J.VariableDeclarations.NamedVariable> newList = new ArrayList<>();
-                newList.add(nv.withInitializer(construction));
-
-                Statement multiConstructor = vds.withVariables(newList);
-
-                return multiConstructor;
-            }
-
             @Override
             public J.NewClass visitNewClass(J.NewClass newClass, ExecutionContext executionContext) {
                 Expression e = newClass.getArguments().get(0);
@@ -98,10 +82,5 @@ public class DuplicateConstructorArguments extends Recipe {
                         executionContext);
             }
         };
-    }
-
-    @Override//does not work either, recipe still expected to complete in one cycle
-    public boolean causesAnotherCycle() {
-        return true;
     }
 }
