@@ -56,18 +56,21 @@ public class DuplicateConstructorArguments extends Recipe {
 
             @Override
             public J.Block visitBlock(J.Block block, ExecutionContext executionContext) {
-                //if I skip the call to super, nothing is changed. But with this call it takes 2 cycles
-                if (block.getStatements().size() == 1) {
+                //condition that will no longer hold after the first visit
+                if (block.getStatements().size() == 1 && block.getStatements().get(0).toString().length() == 14) {
 
+                    //imagine some analysis here that visitNewClass will read
                     List<Statement> preAnalysis = block.getStatements();
 
                     J.Block superBlock = super.visitBlock(block, executionContext);//this should visit the constructor
 
                     List<Statement> resultingStatements = new ArrayList<>();
                     resultingStatements.add(superBlock.getStatements().get(0));
+                    //imagine a filter operation here
 
                     return superBlock.withStatements(resultingStatements);
                 } else {
+                    //needs super, so that inner blocks are visited
                     return super.visitBlock(block, executionContext);
                 }
             }
