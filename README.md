@@ -43,7 +43,9 @@ The [OpenRewrite Docs](https://docs.openrewrite.org/running-recipes) are a great
 ## Recipes offered
 
 * `io.github.timoa.lombok.ConvertToNoArgsConstructor` ([source](./src/main/java/io/github/timoa/ConvertToNoArgsConstructor.java))   
-A recipe that replaces written out constructor wth no arguments with the respective lombok annotation.
+  A recipe that replaces written out constructor wth no arguments with the respective lombok annotation.
+* `io.github.timoa.lombok.ConvertGetterMethodToAnnotation` ([source](./src/main/java/io/github/timoa/ConvertGetterMethodToAnnotation.java))   
+  A recipe that replaces written out getter methods wth no arguments with the respective lombok annotation.
 
 ## Reference recipes (kept for now)
 
