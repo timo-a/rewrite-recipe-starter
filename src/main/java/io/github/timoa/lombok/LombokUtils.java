@@ -5,17 +5,17 @@ import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
-import java.util.function.Predicate;
-
 public class LombokUtils {
 
     public static boolean isEffectivelyGetter(J.MethodDeclaration method) {
         boolean takesNoParameters = method.getParameters().get(0) instanceof J.Empty;
-        boolean singularReturn = method.getBody().getStatements().size() == 1
+        boolean singularReturn = method.getBody() != null //abstract methods can be null
+                && method.getBody().getStatements().size() == 1
                 && method.getBody().getStatements().get(0) instanceof J.Return;
 
         if (takesNoParameters && singularReturn) {
             Expression returnExpression = ((J.Return) method.getBody().getStatements().get(0)).getExpression();
+            //returns just an identifier
             if (returnExpression instanceof J.Identifier) {
                 J.Identifier identifier = (J.Identifier) returnExpression;
                 JavaType.Variable fieldType = identifier.getFieldType();
