@@ -36,13 +36,13 @@ public class RightnameGetter extends Recipe {
     @Override
     public String getDisplayName() {
         //language=markdown
-        return "Use `new ArrayList<>()` instead of Guava";
+        return "Correct the name of getter methods according to how lombok would name";
     }
 
     @Override
     public String getDescription() {
         //language=markdown
-        return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
+        return "Rename methods that are effectively getter to the name lombok would give them.";
     }
 
     static List<RenameRecord> renameRecords = new ArrayList<>();
