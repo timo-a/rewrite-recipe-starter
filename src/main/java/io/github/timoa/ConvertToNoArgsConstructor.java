@@ -40,13 +40,14 @@ public class ConvertToNoArgsConstructor extends Recipe {
     @Override
     public String getDisplayName() {
         //language=markdown
-        return "Use `new ArrayList<>()` instead of Guava";
+        return "Use `@NoArgsConstructor` where applicable";
     }
 
     @Override
     public String getDescription() {
         //language=markdown
-        return "Prefer the Java standard library over third-party usage of Guava in simple cases like this.";
+        return "Prefer the lombok annotation `@NoArgsConstructor` over explicitly written out constructors.\n"
+                + "This recipe does not create annotations for implicit constructors.";
     }
 
     @Override
@@ -70,20 +71,6 @@ public class ConvertToNoArgsConstructor extends Recipe {
                     .imports("lombok.NoArgsConstructor")
                     .build();
 
-            // This method override is only here to show how to print the AST for debugging purposes.
-            // You can remove this method if you don't need it.
-            @Override
-            public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-                // This is a useful debugging tool if you're ever unsure what the visitor is visiting
-                String printed = TreeVisitingPrinter.printTree(cu);
-                System.out.println(printed);
-
-                // You must always delegate to the super method to ensure the visitor continues to visit deeper
-                return super.visitCompilationUnit(cu, ctx);
-            }
-
-
-
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
                 super.visitClassDeclaration(classDecl, executionContext);
@@ -95,16 +82,23 @@ public class ConvertToNoArgsConstructor extends Recipe {
                     return classDecl;
                 }
 
-
                 maybeAddImport("lombok.NoArgsConstructor");
-                List<J.Modifier.Type> modifiers = message.getModifiers().stream().map(J.Modifier::getType).collect(Collectors.toList());
+                List<J.Modifier.Type> modifiers = message.getModifiers().stream()
+                        .map(J.Modifier::getType)
+                        .collect(Collectors.toList());
+
                 J.ClassDeclaration annotatedClass;
                 if (modifiers.contains(J.Modifier.Type.Public)) {
+                    //for public constructors the simple annotation can be used
 
                     annotatedClass = noArgsAnnotationPublic.apply(
                             getCursor(),
                             classDecl.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+
                 } else {
+                    //for not public constructors we need to specify a parameter.
+                    //TODO it is probably cleaner to specify the access level parameter in any case here and develop a
+                    // separate recipe that deletes default parameters in lombok annotations
 
                     String accessLevel;
 
@@ -126,7 +120,7 @@ public class ConvertToNoArgsConstructor extends Recipe {
                 //remove the constructor which is a method declaration which is a statement
                 List<Statement> statements = classDecl.getBody().getStatements()
                         .stream()
-                        .filter(s -> s != message)
+                        .filter(s -> s != message)//keep every statement that isn't the constructor declaration
                         .collect(Collectors.toList());
                 return annotatedClass.withBody(annotatedClass.getBody().withStatements(statements));//todo is there a better way to remove the constructor?
             }
