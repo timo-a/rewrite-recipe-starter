@@ -72,8 +72,8 @@ public class ConvertToNoArgsConstructor extends Recipe {
                     .build();
 
             @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
-                super.visitClassDeclaration(classDecl, executionContext);
+            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+                super.visitClassDeclaration(classDecl, ctx);
 
                 J.MethodDeclaration message = getCursor().pollMessage(FOUND_EMPTY_CONSTRUCTOR);
 
@@ -126,7 +126,7 @@ public class ConvertToNoArgsConstructor extends Recipe {
             }
 
             @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
+            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
                 assert method.getMethodType() != null;
                 if (method.getMethodType().getName().equals("<constructor>") //it's a constructor
                         && method.getParameters().get(0) instanceof J.Empty  //no parameters
@@ -135,7 +135,7 @@ public class ConvertToNoArgsConstructor extends Recipe {
                     getCursor().putMessageOnFirstEnclosing(J.ClassDeclaration.class, FOUND_EMPTY_CONSTRUCTOR, method);
                     return method;
                 }
-                return super.visitMethodDeclaration(method, executionContext);
+                return super.visitMethodDeclaration(method, ctx);
             }
 
         };
