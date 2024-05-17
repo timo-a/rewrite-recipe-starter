@@ -11,7 +11,8 @@ public class LombokUtils {
 
     public static boolean isEffectivelyGetter(J.MethodDeclaration method) {
         boolean takesNoParameters = method.getParameters().get(0) instanceof J.Empty;
-        boolean singularReturn = method.getBody().getStatements().size() == 1
+        boolean singularReturn = method.getBody() != null //abstract methods can be null
+                && method.getBody().getStatements().size() == 1
                 && method.getBody().getStatements().get(0) instanceof J.Return;
 
         if (takesNoParameters && singularReturn) {

@@ -72,17 +72,14 @@ public class RightnameGetter extends Recipe {
     }
 
     private static class MethodRecorder extends JavaIsoVisitor<ExecutionContext> {
-        private enum COORDNINATES {PACKAGE, CLASSNAME};
+        private enum COORDINATES {PACKAGE, CLASSNAME};
 
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
 
             J.Package package_ = cu.getPackageDeclaration();
 
-            getCursor().putMessage(COORDNINATES.PACKAGE.name(), package_ == null ? "" : package_.getPackageName());
-
-
-            String printed = TreeVisitingPrinter.printTree(cu);
+            getCursor().putMessage(COORDINATES.PACKAGE.name(), package_ == null ? "" : package_.getPackageName());
 
             // You must always delegate to the super method to ensure the visitor continues to visit deeper
             return super.visitCompilationUnit(cu, ctx);
@@ -91,7 +88,7 @@ public class RightnameGetter extends Recipe {
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
-            getCursor().putMessage(COORDNINATES.CLASSNAME.name(), classDecl.getSimpleName());
+            getCursor().putMessage(COORDINATES.CLASSNAME.name(), classDecl.getSimpleName());
 
             super.visitClassDeclaration(classDecl, ctx);
 
@@ -113,8 +110,8 @@ public class RightnameGetter extends Recipe {
                 if (!expectedMethodName.equals(actualMethodName)){
                     renameRecords.add(
                             new RenameRecord(
-                                    getCursor().getNearestMessage(COORDNINATES.PACKAGE.name()),
-                                    getCursor().getNearestMessage(COORDNINATES.CLASSNAME.name()),
+                                    getCursor().getNearestMessage(COORDINATES.PACKAGE.name()),
+                                    getCursor().getNearestMessage(COORDINATES.CLASSNAME.name()),
                                     actualMethodName,
                                     expectedMethodName
                             )
