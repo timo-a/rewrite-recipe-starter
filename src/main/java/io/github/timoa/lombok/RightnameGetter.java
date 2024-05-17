@@ -16,9 +16,11 @@
 package io.github.timoa.lombok;
 
 import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.ScanningRecipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.*;
 import org.openrewrite.java.tree.J;
@@ -31,7 +33,7 @@ import static java.util.Comparator.comparing;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class RightnameGetter extends Recipe {
+public class RightnameGetter extends ScanningRecipe<RightnameGetter.MethodAcc> {
 
     @Override
     public String getDisplayName() {
@@ -45,11 +47,21 @@ public class RightnameGetter extends Recipe {
         return "Rename methods that are effectively getter to the name lombok would give them.";
     }
 
-    static List<RenameRecord> renameRecords = new ArrayList<>();
+    static class MethodAcc  {
+        static List<RenameRecord> renameRecords = new ArrayList<>();
+    }
+
+    @Override
+    public MethodAcc getInitialValue(ExecutionContext ctx) {
+        System.out.println("getInitialValue");
+        return new MethodAcc();
+    }
 
     @Override
     public List<Recipe> getRecipeList() {
-        return renameRecords.stream()
+        System.out.println("there are " + MethodAcc.renameRecords.size() + " records");
+        MethodAcc.renameRecords.forEach(r -> System.out.println(String.format("%s.%s %s() -> %s", r.package_, r.className_, r.methodName_, r.newMethodName_)));
+        return MethodAcc.renameRecords.stream()
                 .map(rr -> new ChangeMethodName(
                         String.format("%s.%s %s()", rr.package_, rr.className_, rr.methodName_),
                         rr.newMethodName_,
@@ -59,8 +71,8 @@ public class RightnameGetter extends Recipe {
     }
 
     @Override
-    public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new MethodRecorder();
+    public TreeVisitor<?, ExecutionContext> getScanner(MethodAcc acc) {
+        return new MethodRecorder(acc);
     }
 
     @Value
@@ -71,8 +83,11 @@ public class RightnameGetter extends Recipe {
         String newMethodName_;
     }
 
+    @RequiredArgsConstructor
     private static class MethodRecorder extends JavaIsoVisitor<ExecutionContext> {
         private enum COORDINATES {PACKAGE, CLASSNAME};
+
+        private final MethodAcc acc;
 
         @Override
         public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
@@ -99,7 +114,13 @@ public class RightnameGetter extends Recipe {
         public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
             assert method.getMethodType() != null;
 
+            boolean isMatch = method.getSimpleName().contains("getMaxRawContentLength");
+            if (isMatch)
+                System.out.println("visiting " + method.getSimpleName());
+
             if (LombokUtils.isEffectivelyGetter(method)) {
+                if (isMatch)
+                    System.out.println("iseffectivegetter");
 
                 J.Return return_ = (J.Return) method.getBody().getStatements().get(0);
                 JavaType.Variable fieldType = ((J.Identifier) return_.getExpression()).getFieldType();
@@ -108,7 +129,10 @@ public class RightnameGetter extends Recipe {
                 String actualMethodName = method.getSimpleName();
 
                 if (!expectedMethodName.equals(actualMethodName)){
-                    renameRecords.add(
+                    if (isMatch)
+                        System.out.println("add to records");
+
+                    acc.renameRecords.add(
                             new RenameRecord(
                                     getCursor().getNearestMessage(COORDINATES.PACKAGE.name()),
                                     getCursor().getNearestMessage(COORDINATES.CLASSNAME.name()),
