@@ -18,15 +18,12 @@ package io.github.timoa.lombok;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.openrewrite.ExecutionContext;
-import org.openrewrite.Recipe;
-import org.openrewrite.ScanningRecipe;
-import org.openrewrite.TreeVisitor;
+import org.openrewrite.*;
 import org.openrewrite.java.*;
-import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -136,13 +133,15 @@ public class RightnameGetter extends ScanningRecipe<RightnameGetter.MethodAcc> {
             System.out.println("return empty");
             return new JavaIsoVisitor<>();
         }
+        System.out.println("preparing to pass " + acc.renameRecords.size() + " patterns.");
 
-        RenameRecord r = acc.renameRecords.get(0);
-        Recipe recipe = new ChangeMethodName(
-                String.format("%s.%s %s()", r.package_, r.className_, r.methodName_),
-                r.newMethodName_,
-                null,
-                null);
-        return recipe.getVisitor();
+
+        Map<String, String> collect = acc.renameRecords.stream()
+                .collect(Collectors.toMap(
+                        rr -> String.format("%s.%s %s()", rr.package_, rr.className_, rr.methodName_),
+                        rr -> rr.newMethodName_)
+        );
+
+        return (new ChangeMethodNames(collect, null, null)).getVisitor();
     }
 }
