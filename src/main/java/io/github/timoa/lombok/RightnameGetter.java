@@ -27,9 +27,6 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Comparator.comparing;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -47,27 +44,14 @@ public class RightnameGetter extends ScanningRecipe<RightnameGetter.MethodAcc> {
         return "Rename methods that are effectively getter to the name lombok would give them.";
     }
 
-    static class MethodAcc  {
-        static List<RenameRecord> renameRecords = new ArrayList<>();
+    public static class MethodAcc  {
+        List<RenameRecord> renameRecords = new ArrayList<>();
     }
 
     @Override
     public MethodAcc getInitialValue(ExecutionContext ctx) {
-        System.out.println("getInitialValue");
+        System.out.println("getInitialValue called on "+ this.hashCode());
         return new MethodAcc();
-    }
-
-    @Override
-    public List<Recipe> getRecipeList() {
-        System.out.println("there are " + MethodAcc.renameRecords.size() + " records");
-        MethodAcc.renameRecords.forEach(r -> System.out.println(String.format("%s.%s %s() -> %s", r.package_, r.className_, r.methodName_, r.newMethodName_)));
-        return MethodAcc.renameRecords.stream()
-                .map(rr -> new ChangeMethodName(
-                        String.format("%s.%s %s()", rr.package_, rr.className_, rr.methodName_),
-                        rr.newMethodName_,
-                        null,
-                        null))
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -76,16 +60,16 @@ public class RightnameGetter extends ScanningRecipe<RightnameGetter.MethodAcc> {
     }
 
     @Value
-    private static class RenameRecord {
+    private class RenameRecord {
         String package_;
         String className_;
         String methodName_;
         String newMethodName_;
     }
+    private enum COORDINATES {PACKAGE, CLASSNAME};
 
     @RequiredArgsConstructor
-    private static class MethodRecorder extends JavaIsoVisitor<ExecutionContext> {
-        private enum COORDINATES {PACKAGE, CLASSNAME};
+    private class MethodRecorder extends JavaIsoVisitor<ExecutionContext> {
 
         private final MethodAcc acc;
 
@@ -144,5 +128,21 @@ public class RightnameGetter extends ScanningRecipe<RightnameGetter.MethodAcc> {
             }
             return method;
         }
+    }
+
+    @Override
+    public TreeVisitor<?, ExecutionContext> getVisitor(MethodAcc acc) {
+        if (acc.renameRecords.isEmpty()){
+            System.out.println("return empty");
+            return new JavaIsoVisitor<>();
+        }
+
+        RenameRecord r = acc.renameRecords.get(0);
+        Recipe recipe = new ChangeMethodName(
+                String.format("%s.%s %s()", r.package_, r.className_, r.methodName_),
+                r.newMethodName_,
+                null,
+                null);
+        return recipe.getVisitor();
     }
 }
