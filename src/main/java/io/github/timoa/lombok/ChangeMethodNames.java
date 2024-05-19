@@ -90,10 +90,12 @@ public class ChangeMethodNames extends Recipe {
     
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
+        System.out.println("getVisitor called");
 
         JavaIsoVisitor<ExecutionContext>[] conditions = replacementPattern.keySet().stream().map(this::getCondition).toArray(JavaIsoVisitor[]::new);
-        
-        return Preconditions.check(Preconditions.or(conditions), new JavaIsoVisitor<ExecutionContext>() {
+        System.out.println("conditions assembled");
+
+        return /*Preconditions.check(Preconditions.or(conditions),*/ new JavaIsoVisitor<ExecutionContext>() {
 
             @Override
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
@@ -189,6 +191,7 @@ public class ChangeMethodNames extends Recipe {
                 }
                 return f;
             }
-        });
+        }//)
+        ;
     }
 }

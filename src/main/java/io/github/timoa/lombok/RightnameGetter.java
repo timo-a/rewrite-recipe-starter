@@ -133,15 +133,15 @@ public class RightnameGetter extends ScanningRecipe<RightnameGetter.MethodAcc> {
             System.out.println("return empty");
             return new JavaIsoVisitor<>();
         }
-        System.out.println("preparing to pass " + acc.renameRecords.size() + " patterns.");
 
 
-        Map<String, String> collect = acc.renameRecords.stream()
+        Map<String, String> collect = acc.renameRecords.stream()//.limit(6L)
                 .collect(Collectors.toMap(
                         rr -> String.format("%s.%s %s()", rr.package_, rr.className_, rr.methodName_),
                         rr -> rr.newMethodName_)
         );
 
+        System.out.println("passing " + collect.size() + " patterns.");
         return (new ChangeMethodNames(collect, null, null)).getVisitor();
     }
 }
