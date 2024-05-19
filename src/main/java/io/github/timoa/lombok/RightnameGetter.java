@@ -38,7 +38,9 @@ public class RightnameGetter extends ScanningRecipe<RightnameGetter.MethodAcc> {
     @Override
     public String getDescription() {
         //language=markdown
-        return "Rename methods that are effectively getter to the name lombok would give them.";
+        return "Rename methods that are effectively getter to the name lombok would give them." +
+                "" +
+                "limitations: does not respect the @override annotation at this point -> rewrites overwritten methods even if original is external. This can break the build!";
     }
 
     public static class MethodAcc  {
@@ -110,9 +112,6 @@ public class RightnameGetter extends ScanningRecipe<RightnameGetter.MethodAcc> {
                 String actualMethodName = method.getSimpleName();
 
                 if (!expectedMethodName.equals(actualMethodName)){
-                    if (isMatch)
-                        System.out.println("add to records");
-
                     acc.renameRecords.add(
                             new RenameRecord(
                                     getCursor().getNearestMessage(COORDINATES.PACKAGE.name()),
@@ -122,6 +121,8 @@ public class RightnameGetter extends ScanningRecipe<RightnameGetter.MethodAcc> {
                             )
                     );
                 }
+                if (isMatch)
+                    System.out.println("added to records");
             }
             return method;
         }
@@ -129,19 +130,21 @@ public class RightnameGetter extends ScanningRecipe<RightnameGetter.MethodAcc> {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor(MethodAcc acc) {
+        System.out.println("get visitor called");
         if (acc.renameRecords.isEmpty()){
             System.out.println("return empty");
             return new JavaIsoVisitor<>();
         }
 
-
-        Map<String, String> collect = acc.renameRecords.stream()//.limit(6L)
+        long limit = 148;//working range [1,~148]
+        //I've seen 148 both work and not work...
+        System.out.println("collecting to map with limit: " + limit);
+        Map<String, String> collect = acc.renameRecords.stream().limit(limit)
                 .collect(Collectors.toMap(
                         rr -> String.format("%s.%s %s()", rr.package_, rr.className_, rr.methodName_),
                         rr -> rr.newMethodName_)
         );
-
-        System.out.println("passing " + collect.size() + " patterns.");
+        System.out.println("collecting to map finished. Result has " + collect.size() + " entries. Passing them to the next recipe...");
         return (new ChangeMethodNames(collect, null, null)).getVisitor();
     }
 }
