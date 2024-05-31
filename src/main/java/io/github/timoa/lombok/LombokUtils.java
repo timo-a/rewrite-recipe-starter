@@ -1,9 +1,17 @@
 package io.github.timoa.lombok;
 
+import com.google.common.collect.ImmutableMap;
+import lombok.AccessLevel;
 import org.openrewrite.internal.StringUtils;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+
+import java.util.Collection;
+import java.util.Map;
+
+import static lombok.AccessLevel.*;
+import static org.openrewrite.java.tree.J.Modifier.Type.*;
 
 public class LombokUtils {
 
@@ -32,15 +40,28 @@ public class LombokUtils {
         final String fieldName = fieldType.getName();
 
         boolean alreadyStartsWithIs = fieldName.length() >= 3
-                && fieldName.substring(0,3).matches("is[A-Z]");
+                && fieldName.substring(0, 3).matches("is[A-Z]");
 
         if (isPrimitiveBoolean)
-            if(alreadyStartsWithIs)
+            if (alreadyStartsWithIs)
                 return fieldName;
             else
                 return "is" + StringUtils.capitalize(fieldName);
 
         return "get" + StringUtils.capitalize(fieldName);
+    }
+
+    public static AccessLevel getAccessLevel(Collection<J.Modifier> modifiers) {
+        Map<J.Modifier.Type, AccessLevel> map = ImmutableMap.<J.Modifier.Type, AccessLevel>builder()
+                .put(Public, PUBLIC)
+                .put(Protected, PROTECTED)
+                .put(Private, PRIVATE)
+                .build();
+
+        return modifiers.stream()
+                .map(modifier -> map.getOrDefault(modifier.getType(), AccessLevel.NONE))
+                .filter(a -> a != AccessLevel.NONE)
+                .findAny().orElse(AccessLevel.PACKAGE);
     }
 
 }

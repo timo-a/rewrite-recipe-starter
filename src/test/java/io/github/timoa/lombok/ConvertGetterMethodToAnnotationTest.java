@@ -45,13 +45,7 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
                   int foo = 9;
 
-                  int ba;
-
-                  public A() {
-                      ba = 1;
-                  }
-
-                  int getFoo() {
+                  public int getFoo() {
                       return foo;
                   }
               }
@@ -63,12 +57,90 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
                   @Getter
                   int foo = 9;
+              }
+              """
+          )
+        );
+    }
 
-                  int ba;
+    @Test
+    void replacePackageGetter() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
 
-                  public A() {
-                      ba = 1;
+                  int foo = 9;
+
+                  int getFoo() {
+                      return foo;
                   }
+              }
+              """,
+            """
+              import lombok.AccessLevel;
+              import lombok.Getter;
+              
+              class A {
+
+                  @Getter(AccessLevel.PACKAGE)
+                  int foo = 9;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceProtectedGetter() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  protected int getFoo() {
+                      return foo;
+                  }
+              }
+              """,
+            """
+              import lombok.AccessLevel;
+              import lombok.Getter;
+              
+              class A {
+
+                  @Getter(AccessLevel.PROTECTED)
+                  int foo = 9;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replacePrivateGetter() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+
+                  int foo = 9;
+
+                  private int getFoo() {
+                      return foo;
+                  }
+              }
+              """,
+            """
+              import lombok.AccessLevel;
+              import lombok.Getter;
+              
+              class A {
+
+                  @Getter(AccessLevel.PRIVATE)
+                  int foo = 9;
               }
               """
           )
@@ -90,11 +162,11 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
                       ba = 1;
                   }
 
-                  int getFoo() {
+                  public int getFoo() {
                       return foo;
                   }
 
-                  int getMoo() {//method name wrong
+                  public int getMoo() {//method name wrong
                       return ba;
                   }
               }
@@ -113,7 +185,7 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
                       ba = 1;
                   }
 
-                  int getMoo() {//method name wrong
+                  public int getMoo() {//method name wrong
                       return ba;
                   }
               }
@@ -263,7 +335,7 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
                   boolean foo = true;
 
-                  boolean isFoo() {
+                  public boolean isFoo() {
                       return foo;
                   }
               }
@@ -290,7 +362,7 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
                   boolean isFoo = true;
 
-                  boolean isFoo() {
+                  public boolean isFoo() {
                       return isFoo;
                   }
               }
@@ -335,7 +407,7 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
                   Boolean foo = true;
 
-                  Boolean getFoo() {
+                  public Boolean getFoo() {
                       return foo;
                   }
               }
