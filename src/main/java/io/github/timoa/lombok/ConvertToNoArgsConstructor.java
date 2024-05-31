@@ -15,6 +15,7 @@
  */
 package io.github.timoa.lombok;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -53,21 +54,6 @@ public class ConvertToNoArgsConstructor extends Recipe {
         return new JavaIsoVisitor<ExecutionContext>() {
             public static final String FOUND_EMPTY_CONSTRUCTOR = "FOUND_EMPTY_CONSTRUCTOR";
 
-            private final JavaTemplate noArgsAnnotationPublic = JavaTemplate
-                    .builder("@NoArgsConstructor()\n")
-                    .javaParser(JavaParser.fromJavaVersion()
-                            .classpath("lombok"))
-                    .imports("lombok.NoArgsConstructor")
-                    .build();
-
-            //separate template because more imports are needed
-            private final JavaTemplate noArgsAnnotationParameterized = JavaTemplate
-                    .builder("@NoArgsConstructor(access = AccessLevel.#{})\n")
-                    .javaParser(JavaParser.fromJavaVersion()
-                            .classpath("lombok"))
-                    .imports("lombok.AccessLevel")
-                    .imports("lombok.NoArgsConstructor")
-                    .build();
 
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
@@ -81,40 +67,28 @@ public class ConvertToNoArgsConstructor extends Recipe {
                 }
 
                 maybeAddImport("lombok.NoArgsConstructor");
-                List<J.Modifier.Type> modifiers = message.getModifiers().stream()
-                        .map(J.Modifier::getType)
-                        .collect(Collectors.toList());
 
-                J.ClassDeclaration annotatedClass;
-                if (modifiers.contains(J.Modifier.Type.Public)) {
-                    //for public constructors the simple annotation can be used
+                AccessLevel accessLevel = LombokUtils.getAccessLevel(message.getModifiers());
 
-                    annotatedClass = noArgsAnnotationPublic.apply(
-                            updateCursor(classDeclAfterVisit),
-                            classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
-
-                } else {
-                    //for not public constructors we need to specify a parameter.
-                    //TODO it is probably cleaner to specify the access level parameter in any case here and develop a
-                    // separate recipe that deletes default parameters in lombok annotations
-
-                    String accessLevel;
-
-                    if (modifiers.contains(J.Modifier.Type.Protected)) {
-                        accessLevel = "PROTECTED";
-                    } else if (modifiers.contains(J.Modifier.Type.Private)) {
-                        accessLevel = "PRIVATE";
-                    } else {//no modifier -> package
-                        accessLevel = "PACKAGE";
-                    }
-
-                    annotatedClass = noArgsAnnotationParameterized.apply(
-                            updateCursor(classDeclAfterVisit),
-                            classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)),
-                            accessLevel);
-                }
+                J.ClassDeclaration annotatedClass = getAnnotation(accessLevel).apply(
+                        updateCursor(classDeclAfterVisit),
+                        classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
 
                 return annotatedClass;
+            }
+
+            private JavaTemplate getAnnotation(AccessLevel accessLevel) {
+
+                JavaTemplate.Builder builder = AccessLevel.PUBLIC.equals(accessLevel)
+                        ? JavaTemplate.builder("@NoArgsConstructor()\n")
+                        : JavaTemplate.builder("@NoArgsConstructor(access = AccessLevel." + accessLevel.name() + ")\n")
+                        .imports("lombok.AccessLevel");
+
+                return builder
+                        .imports("lombok.NoArgsConstructor")
+                        .javaParser(JavaParser.fromJavaVersion()
+                                .classpath("lombok"))
+                        .build();
             }
 
             @Override
