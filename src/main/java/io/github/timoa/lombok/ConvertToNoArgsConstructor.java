@@ -71,13 +71,13 @@ public class ConvertToNoArgsConstructor extends Recipe {
 
             @Override
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-                super.visitClassDeclaration(classDecl, ctx);
+                J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
 
                 J.MethodDeclaration message = getCursor().pollMessage(FOUND_EMPTY_CONSTRUCTOR);
 
                 //if no constructor is found return immediately
                 if (message == null) {
-                    return classDecl;
+                    return classDecl;//since nothing changed the original can be returned
                 }
 
                 maybeAddImport("lombok.NoArgsConstructor");
@@ -90,8 +90,8 @@ public class ConvertToNoArgsConstructor extends Recipe {
                     //for public constructors the simple annotation can be used
 
                     annotatedClass = noArgsAnnotationPublic.apply(
-                            getCursor(),
-                            classDecl.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                            updateCursor(classDeclAfterVisit),
+                            classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
 
                 } else {
                     //for not public constructors we need to specify a parameter.
@@ -109,18 +109,12 @@ public class ConvertToNoArgsConstructor extends Recipe {
                     }
 
                     annotatedClass = noArgsAnnotationParameterized.apply(
-                            getCursor(),
-                            classDecl.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)),
+                            updateCursor(classDeclAfterVisit),
+                            classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)),
                             accessLevel);
                 }
 
-
-                //remove the constructor which is a method declaration which is a statement
-                List<Statement> statements = classDecl.getBody().getStatements()
-                        .stream()
-                        .filter(s -> s != message)//keep every statement that isn't the constructor declaration
-                        .collect(Collectors.toList());
-                return annotatedClass.withBody(annotatedClass.getBody().withStatements(statements));//todo is there a better way to remove the constructor?
+                return annotatedClass;
             }
 
             @Override
@@ -131,7 +125,7 @@ public class ConvertToNoArgsConstructor extends Recipe {
                         && method.getBody().getStatements().isEmpty()        //does nothing
                 ) {
                     getCursor().putMessageOnFirstEnclosing(J.ClassDeclaration.class, FOUND_EMPTY_CONSTRUCTOR, method);
-                    return method;
+                    return null;
                 }
                 return super.visitMethodDeclaration(method, ctx);
             }
