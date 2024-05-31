@@ -42,16 +42,10 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
           java(
             """
               class A {
-
+              
                   int foo = 9;
-
-                  int ba;
-
-                  public A() {
-                      ba = 1;
-                  }
-
-                  int getFoo() {
+              
+                  public int getFoo() {
                       return foo;
                   }
               }
@@ -60,15 +54,93 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
               import lombok.Getter;
               
               class A {
-
+              
                   @Getter
                   int foo = 9;
+              }
+              """
+          )
+        );
+    }
 
-                  int ba;
-
-                  public A() {
-                      ba = 1;
+    @Test
+    void replacePackageGetter() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+              
+                  int foo = 9;
+              
+                  int getFoo() {
+                      return foo;
                   }
+              }
+              """,
+            """
+              import lombok.AccessLevel;
+              import lombok.Getter;
+              
+              class A {
+              
+                  @Getter(AccessLevel.PACKAGE)
+                  int foo = 9;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceProtectedGetter() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+              
+                  int foo = 9;
+              
+                  protected int getFoo() {
+                      return foo;
+                  }
+              }
+              """,
+            """
+              import lombok.AccessLevel;
+              import lombok.Getter;
+              
+              class A {
+              
+                  @Getter(AccessLevel.PROTECTED)
+                  int foo = 9;
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replacePrivateGetter() {
+        rewriteRun(// language=java
+          java(
+            """
+              class A {
+              
+                  int foo = 9;
+              
+                  private int getFoo() {
+                      return foo;
+                  }
+              }
+              """,
+            """
+              import lombok.AccessLevel;
+              import lombok.Getter;
+              
+              class A {
+              
+                  @Getter(AccessLevel.PRIVATE)
+                  int foo = 9;
               }
               """
           )
@@ -81,20 +153,20 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
           java(
             """
               class A {
-
+              
                   int foo = 9;
-
+              
                   int ba;
-
+              
                   public A() {
                       ba = 1;
                   }
-
-                  int getFoo() {
+              
+                  public int getFoo() {
                       return foo;
                   }
-
-                  int getMoo() {//method name wrong
+              
+                  public int getMoo() {//method name wrong
                       return ba;
                   }
               }
@@ -103,17 +175,17 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
               import lombok.Getter;
               
               class A {
-
+              
                   @Getter
                   int foo = 9;
-
+              
                   int ba;
-
+              
                   public A() {
                       ba = 1;
                   }
-
-                  int getMoo() {//method name wrong
+              
+                  public int getMoo() {//method name wrong
                       return ba;
                   }
               }
@@ -124,16 +196,16 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
     @Test
     void noChangeWhenMethodNameDoesntMatch() {
-        rewriteRun(
+        rewriteRun(// language=java
           java(
             """
               class A {
-
+              
                   int foo = 9;
-
+              
                   public A() {
                   }
-
+              
                   int getfoo() {//method name wrong
                       return foo;
                   }
@@ -145,16 +217,16 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
     @Test
     void noChangeWhenReturnTypeDoesntMatch() {
-        rewriteRun(
+        rewriteRun(// language=java
           java(
             """
               class A {
-
+              
                   int foo = 9;
-
+              
                   public A() {
                   }
-
+              
                   long getfoo() {//return type wrong
                       return foo;
                   }
@@ -166,17 +238,17 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
     @Test
     void noChangeWhenFieldIsNotReturned() {
-        rewriteRun(
+        rewriteRun(// language=java
           java(
             """
               class A {
-
+              
                   int foo = 9;
                   int ba = 10;
-
+              
                   public A() {
                   }
-
+              
                   int getFoo() {
                       return 5;//does not return variable
                   }
@@ -188,17 +260,17 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
     @Test
     void noChangeWhenDifferentFieldIsReturned() {
-        rewriteRun(
+        rewriteRun(// language=java
           java(
             """
               class A {
-
+              
                   int foo = 9;
                   int ba = 10;
-
+              
                   public A() {
                   }
-
+              
                   int getFoo() {
                       return ba;//returns wrong variable
                   }
@@ -210,17 +282,17 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
     @Test
     void noChangeWhenSideEffects1() {
-        rewriteRun(
+        rewriteRun(// language=java
           java(
             """
               class A {
-
+              
                   int foo = 9;
                   int ba = 10;
-
+              
                   public A() {
                   }
-
+              
                   int getfoo() {
                       foo++;//does extra stuff
                       return foo;
@@ -233,17 +305,17 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
 
     @Test
     void noChangeWhenSideEffects2() {
-        rewriteRun(
+        rewriteRun(// language=java
           java(
             """
               class A {
-
+              
                   int foo = 9;
                   int ba = 10;
-
+              
                   public A() {
                   }
-
+              
                   int getFoo() {
                       ba++;//does unrelated extra stuff
                       return foo;
@@ -260,10 +332,10 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
           java(
             """
               class A {
-
+              
                   boolean foo = true;
-
-                  boolean isFoo() {
+              
+                  public boolean isFoo() {
                       return foo;
                   }
               }
@@ -272,7 +344,7 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
               import lombok.Getter;
               
               class A {
-
+              
                   @Getter
                   boolean foo = true;
               }
@@ -287,10 +359,10 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
           java(
             """
               class A {
-
+              
                   boolean isFoo = true;
-
-                  boolean isFoo() {
+              
+                  public boolean isFoo() {
                       return isFoo;
                   }
               }
@@ -299,7 +371,7 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
               import lombok.Getter;
               
               class A {
-
+              
                   @Getter
                   boolean isFoo = true;
               }
@@ -314,9 +386,9 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
           java(
             """
               class A {
-
+              
                   boolean foo = true;
-
+              
                   boolean getFoo() {
                       return foo;
                   }
@@ -332,10 +404,10 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
           java(
             """
               class A {
-
+              
                   Boolean foo = true;
-
-                  Boolean getFoo() {
+              
+                  public Boolean getFoo() {
                       return foo;
                   }
               }
@@ -344,7 +416,7 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
               import lombok.Getter;
               
               class A {
-
+              
                   @Getter
                   Boolean foo = true;
               }
@@ -359,9 +431,9 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
           java(
             """
               class A {
-
+              
                   Boolean foo = true;
-
+              
                   Boolean isFoo() {
                       return foo;
                   }
@@ -377,9 +449,9 @@ class ConvertGetterMethodToAnnotationTest implements RewriteTest {
           java(
             """
               class A {
-
+              
                   Boolean isfoo = true;
-
+              
                   Boolean isFoo() {
                       return isfoo;
                   }

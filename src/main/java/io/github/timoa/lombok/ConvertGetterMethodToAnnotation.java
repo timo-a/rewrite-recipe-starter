@@ -15,6 +15,7 @@
  */
 package io.github.timoa.lombok;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
@@ -24,13 +25,11 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Statement;
 
 import java.util.HashSet;
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.StringJoiner;
 
 import static java.util.Comparator.comparing;
 import static org.openrewrite.java.tree.JavaType.*;
@@ -48,15 +47,17 @@ public class ConvertGetterMethodToAnnotation extends Recipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return "Convert trivial getter methods `@Getter` annotations on their respective fields.\n"
-                + "\n"
-                + "limitations:  \n"
-                + " - Does not add a dependency to Lombok, users need to do that manually\n"
-                + " - Ignores fields that are declared on the same line as others, e.g. `private int foo, bar;`."
-                + "Users who have such fields are advised to separate them beforehand with "
-                + "[org.openrewrite.staticanalysis.MultipleVariableDeclarations]"
-                + "(https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations).\n"
-                + " - Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.";
+        return new StringJoiner("\n")
+                .add("Convert trivial getter methods to `@Getter` annotations on their respective fields.")
+                .add("")
+                .add("limitations:  ")
+                .add(" - Does not add a dependency to Lombok, users need to do that manually")
+                .add(" - Ignores fields that are declared on the same line as others, e.g. `private int foo, bar;" +
+                        "Users who have such fields are advised to separate them beforehand with " +
+                        "[org.openrewrite.staticanalysis.MultipleVariableDeclaration]" +
+                        "(https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations).")
+                .add(" - Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.")
+                .toString();
     }
 
     @Override
@@ -65,45 +66,27 @@ public class ConvertGetterMethodToAnnotation extends Recipe {
     }
 
 
+    @Value
+    @EqualsAndHashCode(callSuper = false)
     private static class MethodRemover extends JavaIsoVisitor<ExecutionContext> {
         private static final String FIELDS_TO_DECORATE_KEY = "FIELDS_TO_DECORATE";
-
-        //this set collects the fields for which existing methods should be removed and replaced by annotations
-        private Set<Variable> fieldsToDecorate;
 
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
             //initialize set of fields to annotate
-            getCursor().putMessage(FIELDS_TO_DECORATE_KEY, new HashSet<Variable>());
+            getCursor().putMessage(FIELDS_TO_DECORATE_KEY, new HashSet<Finding>());
 
-            super.visitClassDeclaration(classDecl, ctx);
+            //delete methods, note down corresponding fields
+            J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
 
-            fieldsToDecorate = getCursor().pollNearestMessage(FIELDS_TO_DECORATE_KEY);
-
-            //if no applicable getter methods where found, return early
-            if (fieldsToDecorate == null) {
-                return classDecl;
+            //only thing that can have changed is removal of getter methods
+            if (classDeclAfterVisit != classDecl) {
+                //this set collects the fields for which existing methods have already been removed
+                Set<Finding> fieldsToDecorate = getCursor().pollNearestMessage(FIELDS_TO_DECORATE_KEY);
+                doAfterVisit(new FieldAnnotator(fieldsToDecorate));
             }
-
-            maybeAddImport("lombok.Getter");//todo find out why this has to be both here and in the other visitor
-            //filter out those statements that are the manually implemented getter methods that should be removed
-            Predicate<Statement> filterOutMethods = s -> {
-                if(s instanceof J.MethodDeclaration) {
-                    J.MethodDeclaration method = (J.MethodDeclaration) s;
-                    //if none of the fields we recorded matches, the method can stay
-                    return fieldsToDecorate.stream()
-                            .map(LombokUtils::deriveGetterMethodName)
-                            .noneMatch(method.getSimpleName()::equals);
-                }
-                return true; //statements that are not method declarations can stay
-            };
-
-            List<Statement> statements = classDecl.getBody().getStatements()
-                    .stream()
-                    .filter(filterOutMethods)
-                    .collect(Collectors.toList());
-            return classDecl.withBody(classDecl.getBody().withStatements(statements));
+            return classDeclAfterVisit;
         }
 
         @Override
@@ -115,17 +98,19 @@ public class ConvertGetterMethodToAnnotation extends Recipe {
                 Variable fieldType = ((J.Identifier) return_.getExpression()).getFieldType();
                 boolean nameMatch = method.getSimpleName().equals(LombokUtils.deriveGetterMethodName(fieldType));
                 if (nameMatch){
-                    ((Set<Variable>) getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY)).add(fieldType);
+                    ((Set<Finding>) getCursor().getNearestMessage(FIELDS_TO_DECORATE_KEY))
+                            .add(new Finding(fieldType.getName(), LombokUtils.getAccessLevel(method.getModifiers())));
+                    return null; //delete
                 }
             }
             return method;
         }
+    }
 
-        @Override
-        protected void doAfterVisit(TreeVisitor<?, ExecutionContext> visitor) {
-            //pass fields to next visitor, so it can put the annotations on them
-            super.doAfterVisit(new FieldAnnotator(fieldsToDecorate.stream().map(Variable::getName).collect(Collectors.toSet())));
-        }
+    @Value
+    private static class Finding {
+        String fieldName;
+        AccessLevel accessLevel;
     }
 
 
@@ -133,14 +118,20 @@ public class ConvertGetterMethodToAnnotation extends Recipe {
     @EqualsAndHashCode(callSuper = false)
     static class FieldAnnotator extends JavaIsoVisitor<ExecutionContext>{
 
-        Set<String> fieldsToDecorate;
+        Set<Finding> fieldsToDecorate;
 
-        JavaTemplate getterAnnotation = JavaTemplate
-                .builder("@Getter\n")
-                .javaParser(JavaParser.fromJavaVersion()
-                        .classpath("lombok"))
-                .imports("lombok.Getter")
-                .build();
+        private JavaTemplate getAnnotation(AccessLevel accessLevel) {
+            JavaTemplate.Builder builder = AccessLevel.PUBLIC.equals(accessLevel)
+                    ? JavaTemplate.builder("@Getter\n")
+                    : JavaTemplate.builder("@Getter(AccessLevel." + accessLevel.name() + ")\n")
+                    .imports("lombok.AccessLevel");
+
+            return builder
+                    .imports("lombok.Getter")
+                    .javaParser(JavaParser.fromJavaVersion()
+                            .classpath("lombok"))
+                    .build();
+        }
 
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
@@ -151,14 +142,20 @@ public class ConvertGetterMethodToAnnotation extends Recipe {
             }
 
             J.VariableDeclarations.NamedVariable variable = multiVariable.getVariables().get(0);
-            if (fieldsToDecorate.contains(variable.getSimpleName())) {
-                J.VariableDeclarations annotated = getterAnnotation.apply(
-                        getCursor(),
-                        multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
-                maybeAddImport("lombok.Getter");//todo find out why this has to be both here and in the other visitor
-                return annotated;
+            Optional<Finding> field = fieldsToDecorate.stream()
+                    .filter(f -> f.fieldName.equals(variable.getSimpleName()))
+                    .findFirst();
+
+            if (!field.isPresent()) {
+                return multiVariable; //not the field we are looking for
             }
-            return multiVariable;
+
+            J.VariableDeclarations annotated = getAnnotation(field.get().getAccessLevel()).apply(
+                    getCursor(),
+                    multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+            maybeAddImport("lombok.Getter");
+            maybeAddImport("lombok.AccessLevel");
+            return annotated;
         }
     }
 }
