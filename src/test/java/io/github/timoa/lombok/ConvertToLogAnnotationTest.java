@@ -30,7 +30,7 @@ class ConvertToLogAnnotationTest implements RewriteTest {
         spec.recipe(new ConvertToLogAnnotation())
           .parser(JavaParser.fromJavaVersion()
             .logCompilationWarningsAndErrors(true)
-            .classpath("slf4j-api"));
+            .classpath("slf4j-api", "log4j-api"));
     }
 
     @DocumentExample
@@ -97,6 +97,27 @@ class ConvertToLogAnnotationTest implements RewriteTest {
     }
 
     @Test
+    void replaceSlf4jStaticallyImportedLogger() {
+        rewriteRun(// language=java
+          java(
+            """
+              import static org.slf4j.LoggerFactory.*;
+              class A {
+                  private static final org.slf4j.Logger log = getLogger(A.class);
+              }
+              """,
+            """
+              import lombok.extern.slf4j.Slf4j;
+
+              @Slf4j
+              class A {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
     void shouldNotReplaceWhenNotCalledLog() {
         rewriteRun(// language=java
           java(
@@ -109,5 +130,49 @@ class ConvertToLogAnnotationTest implements RewriteTest {
         );
     }
 
+    @Test
+    void replaceSlf4jWithPackage() {
+        rewriteRun(// language=java
+          java(
+            """
+              package com.yourorg.yourapp;
+              class A {
+                  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(A.class);
+              }
+              """,
+            """
+              package com.yourorg.yourapp;
+
+              import lombok.extern.slf4j.Slf4j;
+
+              @Slf4j
+              class A {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void replaceLog4j() {
+        rewriteRun(// language=java
+          java(
+            """
+              import org.apache.logging.log4j.Logger;
+              import org.apache.logging.log4j.LogManager;
+              class A {
+                  private static final Logger log = LogManager.getLogger(A.class);
+              }
+              """,
+            """
+              import lombok.extern.log4j.Log4j2;
+
+              @Log4j2
+              class A {
+              }
+              """
+          )
+        );
+    }
 
 }

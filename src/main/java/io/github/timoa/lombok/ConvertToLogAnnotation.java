@@ -25,15 +25,12 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Statement;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
-
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class ConvertToLogAnnotation extends Recipe {
@@ -56,7 +53,7 @@ public class ConvertToLogAnnotation extends Recipe {
         return new LogVisitor();
     }
 
-    enum Logger {SLF4J}
+    enum Logger {SLF4J, LOG4J2}
 
     @Value
     class Result {
@@ -72,43 +69,41 @@ public class ConvertToLogAnnotation extends Recipe {
     }
 
     class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
-            public static final String FOUND_LOGGER = "FOUND_LOGGER";
+        public static final String FOUND_LOGGER = "FOUND_LOGGER";
+        public static final String CLASS_NAME = "CLASS_NAME";
 
-            private final JavaTemplate slf4jTemplate = JavaTemplate
-                    .builder("@Slf4j\n")
-                    .javaParser(JavaParser.fromJavaVersion()
-                            .classpath("lombok"))
-                    .imports("lombok.extern.slf4j.Slf4j")
-                    .build();
+        @Override
+        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
-            @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
+            getCursor().putMessage(FOUND_LOGGER, new HashSet<Result>());
+            getCursor().putMessage(CLASS_NAME, classDecl.getSimpleName());
 
-                getCursor().putMessage(FOUND_LOGGER, new HashSet<Result>());
+            J.ClassDeclaration visitClassDeclaration = super.visitClassDeclaration(classDecl, ctx);
 
-                J.ClassDeclaration visitClassDeclaration = super.visitClassDeclaration(classDecl, ctx);
+            Set<Result> loggers = getCursor().pollMessage(FOUND_LOGGER);
 
-                Set<Result> loggers = getCursor().pollMessage(FOUND_LOGGER);
-
-                if (loggers.isEmpty()) {
-                    return classDecl;
-                }
+            if (loggers.isEmpty()) {
+                return classDecl;
+            }
 
                 //assuming there is only one finding
-                Result result = loggers.iterator().next();
+            Result result = loggers.iterator().next();
 
-                if (Logger.SLF4J.equals(result.type)) {
+            switch (result.type) {
+                case SLF4J:
                     maybeAddImport("lombok.extern.slf4j.Slf4j");
                     maybeRemoveImport("org.slf4j.Logger");
                     maybeRemoveImport("org.slf4j.LoggerFactory");
-
-                    J.ClassDeclaration annotatedClass = slf4jTemplate.apply(
+                case LOG4J2:
+                    maybeAddImport("lombok.extern.log4j.Log4j2");
+                    maybeRemoveImport("org.apache.logging.log4j.Logger");
+                    maybeRemoveImport("org.apache.logging.log4j.LogManager");
+                default:
+                    J.ClassDeclaration annotatedClass = getLombokTemplate(result.type).apply(
                             updateCursor(visitClassDeclaration),
                             visitClassDeclaration.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
-
                     return annotatedClass;
                 }
-                return visitClassDeclaration;
             }
 
             @Override
@@ -135,6 +130,9 @@ public class ConvertToLogAnnotation extends Recipe {
                     case "org.slf4j.Logger":
                         type = Logger.SLF4J;
                         break;
+                    case "org.apache.logging.log4j.Logger":
+                        type = Logger.LOG4J2;
+                        break;
                     default:
                         return method;
                 }
@@ -144,21 +142,51 @@ public class ConvertToLogAnnotation extends Recipe {
                 //name needs to match the name of the field that lombok creates todo write name normalization recipe
                 if (!"log".equals(var.getSimpleName()))
                     return method;
-//todo match expression
-                /*assert method.getMethodType() != null;
-                if (method.getMethodType().getName().equals("<constructor>") //it's a constructor
-                        && method.getParameters().get(0) instanceof J.Empty  //no parameters
-                        && method.getBody().getStatements().isEmpty()        //does nothing
+
+                J.MethodInvocation methodCall = (J.MethodInvocation) var.getInitializer();
+
+                String leftSide = methodCall.getMethodType().getDeclaringType().getFullyQualifiedName() + "." +  methodCall.getMethodType().getName();
+
+                //method call must match
+                if (
+                        type == Logger.SLF4J && !"org.slf4j.LoggerFactory.getLogger".equals(leftSide)
+                                ||
+                        type == Logger.LOG4J2 && !"org.apache.logging.log4j.LogManager.getLogger".equals(leftSide)
                 ) {
-                    getCursor().putMessageOnFirstEnclosing(J.ClassDeclaration.class, FOUND_LOGGER, method);
                     return method;
-                }*/
+                }
+
+                //argument must match
+                String className = getCursor().pollNearestMessage(CLASS_NAME);
+                if (methodCall.getArguments().size() != 1 || !methodCall.getArguments().get(0).toString().equals(className + ".class")) {
+                    return method;
+                }
 
                 Set<Result> loggers = getCursor().getNearestMessage(FOUND_LOGGER);
                 loggers.add(new Result(method, type));
 
                 return null;
             }
+    }
+
+    private JavaTemplate getLombokTemplate(Logger type) {
+        switch (type) {
+            case SLF4J:
+                return getLombokTemplate("Slf4j", "lombok.extern.slf4j.Slf4j");
+            case LOG4J2:
+                return getLombokTemplate("Log4j2", "lombok.extern.log4j.Log4j2");
+            default:
+                throw new IllegalArgumentException("Unsupported log type: " + type);
+        }
+    }
+
+    JavaTemplate getLombokTemplate(String name, String import_) {
+        return JavaTemplate
+                .builder("@"+name+"\n")
+                .javaParser(JavaParser.fromJavaVersion()
+                        .classpath("lombok"))
+                .imports(import_)
+                .build();
     }
 
 }

@@ -50,6 +50,7 @@ dependencies {
     testRuntimeOnly("org.apache.commons:commons-lang3:latest.release")
     testRuntimeOnly("org.springframework:spring-core:latest.release")
     testImplementation("org.projectlombok:lombok:1.18.32")
+    testImplementation("org.apache.logging.log4j:log4j-api:2.23.1")
 
     // Contains the OpenRewriteBestPractices recipe, which you can apply to your recipes
     rewrite("org.openrewrite.recipe:rewrite-recommendations:latest.release")
