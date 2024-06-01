@@ -41,14 +41,14 @@ public class ConvertToLogAnnotation extends Recipe {
     @Override
     public String getDisplayName() {
         //language=markdown
-        return "Use `@NoArgsConstructor` where applicable";
+        return "Use `@Slf4` instead of defining the field yourself";
     }
 
     @Override
     public String getDescription() {
         //language=markdown
-        return "Prefer the lombok annotation `@NoArgsConstructor` over explicitly written out constructors.\n"
-                + "This recipe does not create annotations for implicit constructors.";
+        return "Prefer the lombok annotation `@Slf4` over explicitly written out Logger fields.\n"
+                + "assumptions• the explicit tfield must be called `log`.";
     }
 
     @Override
@@ -86,7 +86,7 @@ public class ConvertToLogAnnotation extends Recipe {
 
                 getCursor().putMessage(FOUND_LOGGER, new HashSet<Result>());
 
-                super.visitClassDeclaration(classDecl, ctx);
+                J.ClassDeclaration visitClassDeclaration = super.visitClassDeclaration(classDecl, ctx);
 
                 Set<Result> loggers = getCursor().pollMessage(FOUND_LOGGER);
 
@@ -99,20 +99,16 @@ public class ConvertToLogAnnotation extends Recipe {
 
                 if (Logger.SLF4J.equals(result.type)) {
                     maybeAddImport("lombok.extern.slf4j.Slf4j");
+                    maybeRemoveImport("org.slf4j.Logger");
+                    maybeRemoveImport("org.slf4j.LoggerFactory");
 
-                    J.ClassDeclaration annotatedClass;
-                    annotatedClass = slf4jTemplate.apply(
-                            getCursor(),
-                            classDecl.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
+                    J.ClassDeclaration annotatedClass = slf4jTemplate.apply(
+                            updateCursor(visitClassDeclaration),
+                            visitClassDeclaration.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
 
-                    List<Statement> statements = classDecl.getBody().getStatements()
-                            .stream()
-                            .filter(s -> !s.getId().equals(result.uuid))//keep every statement that isn't the constructor declaration
-                            .collect(Collectors.toList());
-                    return annotatedClass.withBody(annotatedClass.getBody().withStatements(statements));//todo is there a better way to remove the field
+                    return annotatedClass;
                 }
-                //remove the constructor which is a method declaration which is a statement
-                return classDecl;
+                return visitClassDeclaration;
             }
 
             @Override
@@ -144,7 +140,11 @@ public class ConvertToLogAnnotation extends Recipe {
                 }
 
                 J.VariableDeclarations.NamedVariable var = method.getVariables().get(0);
-//todo
+
+                //name needs to match the name of the field that lombok creates todo write name normalization recipe
+                if (!"log".equals(var.getSimpleName()))
+                    return method;
+//todo match expression
                 /*assert method.getMethodType() != null;
                 if (method.getMethodType().getName().equals("<constructor>") //it's a constructor
                         && method.getParameters().get(0) instanceof J.Empty  //no parameters
@@ -157,7 +157,7 @@ public class ConvertToLogAnnotation extends Recipe {
                 Set<Result> loggers = getCursor().getNearestMessage(FOUND_LOGGER);
                 loggers.add(new Result(method, type));
 
-                return method;
+                return null;
             }
     }
 

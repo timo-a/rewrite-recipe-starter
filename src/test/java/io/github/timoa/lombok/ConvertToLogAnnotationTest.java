@@ -65,8 +65,8 @@ class ConvertToLogAnnotationTest implements RewriteTest {
               }
               """,
             """
-              import org.slf4j.Logger;
               import lombok.extern.slf4j.Slf4j;
+
               @Slf4j
               class A {
               }
@@ -76,36 +76,19 @@ class ConvertToLogAnnotationTest implements RewriteTest {
     }
 
     @Test
-    void keepNonEmptyPublicConstructor() {
-        rewriteRun(
+    void replaceSlf4jImportedLogger() {
+        rewriteRun(// language=java
           java(
             """
+              import org.slf4j.LoggerFactory;
               class A {
-              
-                  int foo;
-              
-                  public A() {
-                      foo = 7;
-                  }
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void replaceEmptyProtectedConstructor() {
-        rewriteRun(
-          java(
-            """
-              class A {
-                  protected A() {}
+                  private static final org.slf4j.Logger log = LoggerFactory.getLogger(A.class);
               }
               """,
             """
-              import lombok.NoArgsConstructor;
-              
-              @NoArgsConstructor(access = AccessLevel.PROTECTED)
+              import lombok.extern.slf4j.Slf4j;
+
+              @Slf4j
               class A {
               }
               """
@@ -114,43 +97,17 @@ class ConvertToLogAnnotationTest implements RewriteTest {
     }
 
     @Test
-    void replaceEmptyPrivateConstructor() {
-        rewriteRun(
+    void shouldNotReplaceWhenNotCalledLog() {
+        rewriteRun(// language=java
           java(
             """
               class A {
-                  private A() {}
-              }
-              """,
-            """
-              import lombok.NoArgsConstructor;
-              
-              @NoArgsConstructor(access = AccessLevel.PRIVATE)
-              class A {
+                  private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(A.class);
               }
               """
           )
         );
     }
 
-    @Test
-    void replaceEmptyPackageConstructor() {
-        rewriteRun(
-          java(
-            """
-              class A {
-                  A() {}
-              }
-              """,
-            """
-              import lombok.NoArgsConstructor;
-              
-              @NoArgsConstructor(access = AccessLevel.PACKAGE)
-              class A {
-              }
-              """
-          )
-        );
-    }
 
 }
