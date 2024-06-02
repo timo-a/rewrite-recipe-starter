@@ -15,6 +15,7 @@
  */
 package io.github.timoa.lombok;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -27,6 +28,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,7 +55,7 @@ public class ConvertToLogAnnotation extends Recipe {
         return new LogVisitor();
     }
 
-    enum Logger {SLF4J, LOG4J2}
+    enum Logger {SLF4J, LOG4J2, LOG, JBOSS, COMMONS}
 
     @Value
     class Result {
@@ -98,6 +100,16 @@ public class ConvertToLogAnnotation extends Recipe {
                     maybeAddImport("lombok.extern.log4j.Log4j2");
                     maybeRemoveImport("org.apache.logging.log4j.Logger");
                     maybeRemoveImport("org.apache.logging.log4j.LogManager");
+                case LOG:
+                    maybeAddImport("lombok.extern.java.Log");
+                    maybeRemoveImport("java.util.logging.Logger");
+                case JBOSS:
+                    maybeAddImport("lombok.extern.jbosslog.JBossLog");
+                    maybeRemoveImport("org.jboss.logging.Logger");
+                case COMMONS:
+                    maybeAddImport("lombok.extern.apachecommons.CommonsLog");
+                    maybeRemoveImport("org.apache.commons.logging.Log");
+                    maybeRemoveImport("org.apache.commons.logging.LogFactory");
                 default:
                     J.ClassDeclaration annotatedClass = getLombokTemplate(result.type).apply(
                             updateCursor(visitClassDeclaration),
@@ -126,16 +138,19 @@ public class ConvertToLogAnnotation extends Recipe {
                 }
 
                 Logger type;
-                switch (method.getTypeAsFullyQualified().getFullyQualifiedName()) {
-                    case "org.slf4j.Logger":
-                        type = Logger.SLF4J;
-                        break;
-                    case "org.apache.logging.log4j.Logger":
-                        type = Logger.LOG4J2;
-                        break;
-                    default:
-                        return method;
-                }
+                Map<String, Logger> typeMap = ImmutableMap.<String, Logger> builder()
+                        .put("org.slf4j.Logger", Logger.SLF4J)
+                        .put("org.apache.logging.log4j.Logger", Logger.LOG4J2)
+                        .put("java.util.logging.Logger", Logger.LOG)
+                        .put("org.jboss.logging.Logger", Logger.JBOSS)
+                        .put("org.apache.commons.logging.Log", Logger.COMMONS)
+                        .build();
+
+                String path = method.getTypeAsFullyQualified().getFullyQualifiedName();
+                if (typeMap.containsKey(path))
+                    type = typeMap.get(path);
+                else
+                    return method;
 
                 J.VariableDeclarations.NamedVariable var = method.getVariables().get(0);
 
@@ -152,13 +167,24 @@ public class ConvertToLogAnnotation extends Recipe {
                         type == Logger.SLF4J && !"org.slf4j.LoggerFactory.getLogger".equals(leftSide)
                                 ||
                         type == Logger.LOG4J2 && !"org.apache.logging.log4j.LogManager.getLogger".equals(leftSide)
+                                ||
+                        type == Logger.LOG && !"java.util.logging.Logger.getLogger".equals(leftSide)
+                                ||
+                        type == Logger.JBOSS && !"org.jboss.logging.Logger.getLogger".equals(leftSide)
+                                ||
+                        type == Logger.COMMONS && !"org.apache.commons.logging.LogFactory.getLog".equals(leftSide)
                 ) {
                     return method;
                 }
 
                 //argument must match
                 String className = getCursor().pollNearestMessage(CLASS_NAME);
-                if (methodCall.getArguments().size() != 1 || !methodCall.getArguments().get(0).toString().equals(className + ".class")) {
+                if (methodCall.getArguments().size() != 1 ||
+                        !methodCall.getArguments().get(0).toString().equals(
+                                type == Logger.LOG
+                                        ? className + ".class.getName()"
+                                        : className + ".class"
+                        )) {
                     return method;
                 }
 
@@ -175,6 +201,12 @@ public class ConvertToLogAnnotation extends Recipe {
                 return getLombokTemplate("Slf4j", "lombok.extern.slf4j.Slf4j");
             case LOG4J2:
                 return getLombokTemplate("Log4j2", "lombok.extern.log4j.Log4j2");
+            case LOG:
+                return getLombokTemplate("Log", "lombok.extern.java.Log");
+            case JBOSS:
+                return getLombokTemplate("JBossLog", "lombok.extern.jbosslog.JBossLog");
+            case COMMONS:
+                return getLombokTemplate("CommonsLog", "lombok.extern.apachecommons.CommonsLog");
             default:
                 throw new IllegalArgumentException("Unsupported log type: " + type);
         }
