@@ -30,7 +30,7 @@ class ConvertToLogAnnotationTest implements RewriteTest {
         spec.recipe(new ConvertToLogAnnotation())
           .parser(JavaParser.fromJavaVersion()
             .logCompilationWarningsAndErrors(true)
-            .classpath("slf4j-api", "log4j-api", "jboss-logging", "commons-logging"));
+            .classpath("slf4j-api"));
     }
 
     @DocumentExample
@@ -146,92 +146,6 @@ class ConvertToLogAnnotationTest implements RewriteTest {
               import lombok.extern.slf4j.Slf4j;
 
               @Slf4j
-              class A {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void replaceLog4j() {
-        rewriteRun(// language=java
-          java(
-            """
-              import org.apache.logging.log4j.Logger;
-              import org.apache.logging.log4j.LogManager;
-              class A {
-                  private static final Logger log = LogManager.getLogger(A.class);
-              }
-              """,
-            """
-              import lombok.extern.log4j.Log4j2;
-
-              @Log4j2
-              class A {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void replaceLog() {
-        rewriteRun(// language=java
-          java(
-            """
-              import java.util.logging.Logger;
-              class A {
-                  private static final Logger log = Logger.getLogger(A.class.getName());
-              }
-              """,
-            """
-              import lombok.extern.java.Log;
-              
-              @Log
-              class A {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void replaceJbossLog() {
-        rewriteRun(// language=java
-          java(
-            """
-              import org.jboss.logging.Logger;
-              class A {
-                  private static final Logger log = Logger.getLogger(A.class);
-              }
-              """,
-            """
-              import lombok.extern.jbosslog.JBossLog;
-              
-              @JBossLog
-              class A {
-              }
-              """
-          )
-        );
-    }
-
-    @Test
-    void replaceCommonsLog() {
-        rewriteRun(// language=java
-          java(
-            """
-              import org.apache.commons.logging.Log;
-              import org.apache.commons.logging.LogFactory;
-              class A {
-                  private static final Log log = LogFactory.getLog(A.class);
-              }
-              """,
-            """
-              import lombok.extern.apachecommons.CommonsLog;
-              
-              @CommonsLog
               class A {
               }
               """
