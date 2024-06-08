@@ -119,12 +119,12 @@ public class ConvertToLogAnnotation extends Recipe {
             }
 
             @Override
-            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations method, ExecutionContext ctx) {
+            public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable, ExecutionContext ctx) {
 
                 //there must be exactly one Logger per line
                 //declaring two or more in one line is possible, but I don't care to support that
-                if (method.getVariables().size() != 1)
-                    return method;
+                if (multiVariable.getVariables().size() != 1)
+                    return multiVariable;
 
 
                 HashSet<J.Modifier.Type> requiredModifiers = Sets.newHashSet(
@@ -133,8 +133,8 @@ public class ConvertToLogAnnotation extends Recipe {
                         J.Modifier.Type.Final
                 );
                 if(!requiredModifiers.equals(
-                        method.getModifiers().stream().map(J.Modifier::getType).collect(Collectors.toSet()))) {
-                    return method;
+                        multiVariable.getModifiers().stream().map(J.Modifier::getType).collect(Collectors.toSet()))) {
+                    return multiVariable;
                 }
 
                 Logger type;
@@ -146,17 +146,17 @@ public class ConvertToLogAnnotation extends Recipe {
                         .put("org.apache.commons.logging.Log", Logger.COMMONS)
                         .build();
 
-                String path = method.getTypeAsFullyQualified().getFullyQualifiedName();
+                String path = multiVariable.getTypeAsFullyQualified().getFullyQualifiedName();
                 if (typeMap.containsKey(path))
                     type = typeMap.get(path);
                 else
-                    return method;
+                    return multiVariable;
 
-                J.VariableDeclarations.NamedVariable var = method.getVariables().get(0);
+                J.VariableDeclarations.NamedVariable var = multiVariable.getVariables().get(0);
 
                 //name needs to match the name of the field that lombok creates todo write name normalization recipe
                 if (!"log".equals(var.getSimpleName()))
-                    return method;
+                    return multiVariable;
 
                 J.MethodInvocation methodCall = (J.MethodInvocation) var.getInitializer();
 
@@ -174,7 +174,7 @@ public class ConvertToLogAnnotation extends Recipe {
                                 ||
                         type == Logger.COMMONS && !"org.apache.commons.logging.LogFactory.getLog".equals(leftSide)
                 ) {
-                    return method;
+                    return multiVariable;
                 }
 
                 //argument must match
@@ -185,11 +185,11 @@ public class ConvertToLogAnnotation extends Recipe {
                                         ? className + ".class.getName()"
                                         : className + ".class"
                         )) {
-                    return method;
+                    return multiVariable;
                 }
 
                 Set<Result> loggers = getCursor().getNearestMessage(FOUND_LOGGER);
-                loggers.add(new Result(method, type));
+                loggers.add(new Result(multiVariable, type));
 
                 return null;
             }
