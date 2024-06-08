@@ -25,7 +25,9 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
+import org.openrewrite.java.tree.Flag;
 import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.JavaType;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -127,17 +129,12 @@ public class ConvertToLogAnnotation extends Recipe {
                     return multiVariable;
 
 
-                HashSet<J.Modifier.Type> requiredModifiers = Sets.newHashSet(
-                        J.Modifier.Type.Private,
-                        J.Modifier.Type.Static,
-                        J.Modifier.Type.Final
-                );
-                if(!requiredModifiers.equals(
-                        multiVariable.getModifiers().stream().map(J.Modifier::getType).collect(Collectors.toSet()))) {
+                JavaType.FullyQualified type = multiVariable.getTypeAsFullyQualified();
+                if (!type.hasFlags(Flag.Private, Flag.Static, Flag.Final)) {
                     return multiVariable;
                 }
 
-                Logger type;
+                Logger loggerType;
                 Map<String, Logger> typeMap = ImmutableMap.<String, Logger> builder()
                         .put("org.slf4j.Logger", Logger.SLF4J)
                         .put("org.apache.logging.log4j.Logger", Logger.LOG4J2)
@@ -146,9 +143,9 @@ public class ConvertToLogAnnotation extends Recipe {
                         .put("org.apache.commons.logging.Log", Logger.COMMONS)
                         .build();
 
-                String path = multiVariable.getTypeAsFullyQualified().getFullyQualifiedName();
+                String path = type.getFullyQualifiedName();
                 if (typeMap.containsKey(path))
-                    type = typeMap.get(path);
+                    loggerType = typeMap.get(path);
                 else
                     return multiVariable;
 
@@ -164,15 +161,15 @@ public class ConvertToLogAnnotation extends Recipe {
 
                 //method call must match
                 if (
-                        type == Logger.SLF4J && !"org.slf4j.LoggerFactory.getLogger".equals(leftSide)
+                        loggerType == Logger.SLF4J && !"org.slf4j.LoggerFactory.getLogger".equals(leftSide)
                                 ||
-                        type == Logger.LOG4J2 && !"org.apache.logging.log4j.LogManager.getLogger".equals(leftSide)
+                        loggerType == Logger.LOG4J2 && !"org.apache.logging.log4j.LogManager.getLogger".equals(leftSide)
                                 ||
-                        type == Logger.LOG && !"java.util.logging.Logger.getLogger".equals(leftSide)
+                        loggerType == Logger.LOG && !"java.util.logging.Logger.getLogger".equals(leftSide)
                                 ||
-                        type == Logger.JBOSS && !"org.jboss.logging.Logger.getLogger".equals(leftSide)
+                        loggerType == Logger.JBOSS && !"org.jboss.logging.Logger.getLogger".equals(leftSide)
                                 ||
-                        type == Logger.COMMONS && !"org.apache.commons.logging.LogFactory.getLog".equals(leftSide)
+                        loggerType == Logger.COMMONS && !"org.apache.commons.logging.LogFactory.getLog".equals(leftSide)
                 ) {
                     return multiVariable;
                 }
@@ -181,7 +178,7 @@ public class ConvertToLogAnnotation extends Recipe {
                 String className = getCursor().pollNearestMessage(CLASS_NAME);
                 if (methodCall.getArguments().size() != 1 ||
                         !methodCall.getArguments().get(0).toString().equals(
-                                type == Logger.LOG
+                                loggerType == Logger.LOG
                                         ? className + ".class.getName()"
                                         : className + ".class"
                         )) {
@@ -189,7 +186,7 @@ public class ConvertToLogAnnotation extends Recipe {
                 }
 
                 Set<Result> loggers = getCursor().getNearestMessage(FOUND_LOGGER);
-                loggers.add(new Result(multiVariable, type));
+                loggers.add(new Result(multiVariable, loggerType));
 
                 return null;
             }
@@ -220,5 +217,4 @@ public class ConvertToLogAnnotation extends Recipe {
                 .imports(import_)
                 .build();
     }
-
 }
