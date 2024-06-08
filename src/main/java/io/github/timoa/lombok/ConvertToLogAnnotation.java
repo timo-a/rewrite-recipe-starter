@@ -47,7 +47,7 @@ public class ConvertToLogAnnotation extends Recipe {
     public String getDescription() {
         //language=markdown
         return "Prefer the lombok annotation `@Slf4` over explicitly written out Logger fields.\n"
-                + "assumptions• the explicit tfield must be called `log`.";
+                + "assumptions: the explicit field must be called `log`.";
     }
 
     @Override
