@@ -72,7 +72,7 @@ public class ConvertMethodToGetterAnnotation extends Recipe {
 
             //no lombok (neither annotation nor import) in result without this one
             maybeAddImport("lombok.Getter");//todo find out why this has to be both here and in the other visitor
-            return classDeclAfterVisit;
+            return new FieldAnnotator().visitClassDeclaration(classDeclAfterVisit, ctx);
         }
 
         @Override
@@ -84,12 +84,6 @@ public class ConvertMethodToGetterAnnotation extends Recipe {
             return null;
         }
 
-        @Override
-        protected void doAfterVisit(TreeVisitor<?, ExecutionContext> visitor) {
-            if (decorateFields) {
-                super.doAfterVisit(new FieldAnnotator());
-            }
-        }
     }
 
     @Value
