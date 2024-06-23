@@ -64,4 +64,27 @@ end note
 class ConvertToSlf4jLogAnnotation {
 }
 
-@enduml....
+@enduml
+....
+
+
+gugu
+
+[tabs]
+====
+Tab A:: Contents of Tab A.
+
+Tab B::
++
+Contents of Tab B.
+
+Tab C::
++
+.something
+[java]
+--
+Contents of Tab C.
+
+Contains more than one block.
+--
+====

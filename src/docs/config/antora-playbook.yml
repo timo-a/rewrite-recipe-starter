@@ -17,3 +17,4 @@ antora:
 asciidoc:
   extensions:
     - asciidoctor-kroki
+    - '@asciidoctor/tabs'
