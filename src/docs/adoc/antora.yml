@@ -1,0 +1,6 @@
+name: component-singleton
+title: Componento Solo
+version: 0
+nav:
+  - modules/ROOT/nav.adoc
+  - modules/recipes/nav.adoc
