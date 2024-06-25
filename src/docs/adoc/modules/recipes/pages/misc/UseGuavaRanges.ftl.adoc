@@ -1,0 +1,70 @@
+= ${displayName}
+:recipe-coordinates: io.github.timoa.misc.UseRangesRecipes
+//--dummy-parameter-values: f
+
+*{recipe-coordinates}*
+
+---
+${description}
+
+---
+
+
+== Recipe Source
+
+${recipe.url}[GitHub], ${recipe.issue}[Issue Tracker], ${recipe.sonartype}[Maven Central]
+
+* groupId: ${recipe.groupId}
+* artifactId: ${recipe.artifactId}
+* version: ${recipe.version}
+
+== Usage
+
+[tabs]
+====
+Maven POM::
++
+
+
+1. Add the following to your pom.xml file:
++
+[source,xml]
+----
+<project>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.openrewrite.maven</groupId>
+        <artifactId>rewrite-maven-plugin</artifactId>
+        <version>${mavenPluginVersion}</version>
+        <configuration>
+          <activeRecipes>
+            <recipe>${recipe.coordinates}</recipe>
+          </activeRecipes>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>${recipe.groupId}</groupId>
+            <artifactId>${recipe.artifactId}</artifactId>
+            <version>${recipe.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+----
+2. Run `+mvn rewrite:run+` to run the recipe.
+
+Maven Command Line::
++
+[source,Java]
+--
+public static void main(){
+
+}
+--
+
+Todo:: add gradle
+====
+

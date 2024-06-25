@@ -3,6 +3,8 @@
 
 :tag: bhbh
 
+**org.openrewrite.java.migrate.guava.PreferMathAddExact**
+
 fish
 
 [ditaa]
@@ -76,15 +78,20 @@ Tab A:: Contents of Tab A.
 
 Tab B::
 +
-Contents of Tab B.
+[source,Kotlin]
+--
+public static void main(){
+
+}
+--
 
 Tab C::
 +
 .something
-[java]
+[source,java]
 --
-Contents of Tab C.
+public static void main(){
 
-Contains more than one block.
+}
 --
 ====
