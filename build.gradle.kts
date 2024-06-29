@@ -32,7 +32,8 @@ dependencies {
     implementation("org.assertj:assertj-core:3.24.2")
     runtimeOnly("org.openrewrite:rewrite-java-17")
     implementation("org.projectlombok:lombok:1.18.32")
-    implementation("org.freemarker:freemarker:2.3.23")
+    implementation("org.freemarker:freemarker:2.3.30")
+    implementation("org.apache.commons:commons-lang3:3.12.0")
 
     // Refaster style recipes need the rewrite-templating annotation processor and dependency for generated recipes
     // https://github.com/openrewrite/rewrite-templating/releases

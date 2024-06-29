@@ -3,5 +3,7 @@
 .Lombok
 * xref:lombok/Getter.adoc[]
 
+** xref:lombok/log/ConvertJBossLogger.adoc[]
 
-** xref:misc/UseGuavaRanges.adoc[]
+.Misc
+* xref:misc/UseGuavaRanges.adoc[]

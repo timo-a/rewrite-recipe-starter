@@ -1,8 +1,6 @@
 = ${displayName}
-:recipe-coordinates: io.github.timoa.misc.UseRangesRecipes
-//--dummy-parameter-values: f
 
-*{recipe-coordinates}*
+*${recipe.coordinates}*
 
 ---
 ${description}
@@ -58,13 +56,14 @@ Maven POM::
 
 Maven Command Line::
 +
-[source,Java]
+You will need to have https://maven.apache.org/download.cgi[Maven] installed on your machine before you can run the following command.
++
+[source,Shell]
 --
-public static void main(){
-
-}
+mvn -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=${recipe.groupId}:${recipe.artifactId}:RELEASE -Drewrite.activeRecipes=${recipe.coordinates}
 --
 
 Todo:: add gradle
 ====
+
 
