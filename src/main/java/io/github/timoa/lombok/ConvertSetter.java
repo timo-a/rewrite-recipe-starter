@@ -46,17 +46,17 @@ public class ConvertSetter extends Recipe {
 
     @Override
     public String getDescription() {
-        //language=markdown
+        //language=asciidoc
         return new StringJoiner("\n")
                 .add("Convert trivial setter methods to `@Setter` annotations on their respective fields.")
                 .add("")
-                .add("limitations:  ")
-                .add(" - Does not add a dependency to Lombok, users need to do that manually")
-                .add(" - Ignores fields that are declared on the same line as others, e.g. `private int foo, bar;" +
+                .add("Limitations:  ")
+                .add("")
+                .add(" * Does not add a dependency to Lombok, users need to do that manually")
+                .add(" * Ignores fields that are declared on the same line as others, e.g. `private int foo, bar;" +
                         "Users who have such fields are advised to separate them beforehand with " +
-                        "[org.openrewrite.staticanalysis.MultipleVariableDeclaration]" +
-                        "(https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations).")
-                .add(" - Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.")
+                        "https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations[org.openrewrite.staticanalysis.MultipleVariableDeclaration].")
+                .add(" * Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.")
                 .toString();
     }
 

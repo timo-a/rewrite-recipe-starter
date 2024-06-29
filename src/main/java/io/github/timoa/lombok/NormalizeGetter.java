@@ -38,14 +38,17 @@ public class NormalizeGetter extends ScanningRecipe<NormalizeGetter.MethodAcc> {
 
     @Override
     public String getDescription() {
-        //language=markdown
-        return "Rename methods that are effectively getter to the name lombok would give them." +
-                "" +
-                "limitations: " +
-                " - if two methods in a class are effectively the same getter then one's name will be corrected and the others name will be left as it is." +
-                " - if the correct name for a method is already taken by another method then the name will not be corrected." +
-                " - method name swaps or circular renaming within a class cannot be performed because the names block each other. E.g. `int getFoo() { return ba; } int getBa() { return foo; }` stays as it is." +
-                ".";
+        //language=asciidoc
+        return new StringJoiner("\n")
+                .add("Rename methods that are effectively getter to the name lombok would give them.")
+                .add("")
+                .add("Limitations: ")
+                .add("")
+                .add(" * if two methods in a class are effectively the same getter then one's name will be corrected and the others name will be left as it is.")
+                .add(" * if the correct name for a method is already taken by another method then the name will not be corrected.")
+                .add(" * method name swaps or circular renaming within a class cannot be performed because the names block each other. ")
+                .add("E.g. `int getFoo() { return ba; } int getBa() { return foo; }` stays as it is.")
+                .toString();
     }
 
     public static class MethodAcc  {
