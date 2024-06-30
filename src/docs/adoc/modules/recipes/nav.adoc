@@ -3,7 +3,18 @@
 .Lombok
 * xref:lombok/Getter.adoc[]
 
-** xref:lombok/log/ConvertJBossLogger.adoc[]
+** xref:lombok/log/ConvertCommons.adoc[]
+** xref:lombok/log/ConvertJBoss.adoc[]
+** xref:lombok/log/ConvertLog4j2.adoc[]
+** xref:lombok/log/ConvertSlf4j.adoc[]
+** xref:lombok/log/ConvertUtil.adoc[]
+
+* xref:lombok/NormalizeGetter.adoc[]
+* xref:lombok/NormalizeSetter.adoc[]
+* xref:lombok/ConvertGetter.adoc[]
+* xref:lombok/ConvertSetter.adoc[]
+* xref:lombok/ConvertNoArgsConstructor.adoc[]
+
 
 .Misc
 * xref:misc/UseGuavaRanges.adoc[]
