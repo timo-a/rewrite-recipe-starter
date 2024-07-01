@@ -1,0 +1,4 @@
+= I am the index!
+:navtitle: Welcome
+
+What up?
