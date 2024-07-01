@@ -1,0 +1,45 @@
+:recipe-coordinates: io.github.timoa.lombok.log.ConvertCommons
+:dummy-parameter-values: log
+== Notes
+
+[plantuml]
+....
+@startuml
+
+Recipe <|--- ConvertLogRecipe
+
+JavaIsoVistor <|--- LogVisitor
+
+LogVisitor <|--- Slf4jVisitor
+
+ConvertLogRecipe  <|--- ConvertToSlf4jLogAnnotation
+
+ConvertToSlf4jLogAnnotation::getVisitor *- "1" Slf4jVisitor: getVisitor()
+
+class Recipe {
+getDisplayName(): String
+getDescription(): String
+getVisitor(): TreeVisitor
+}
+
+abstract class LogVisitor {
+{abstract} switchImports(): void
+{abstract} getLombokTemplate() : JavaTemplate
+{abstract} expectedLoggerPath() : String
+{abstract} methodPath(path : String)
+}
+
+abstract class ConvertLogRecipe {
+getDisplayName(annotation: String): String
+getDescription(annotation: String): String
+}
+note left of ConvertLogRecipe::getDisplayName
+ helper methods provde a template
+end note
+
+class ConvertToSlf4jLogAnnotation {
+}
+
+@enduml
+....
+

@@ -6,3 +6,4 @@ out/
 src/main/generated/
 .vscode/
 *.iml
+node_modules
