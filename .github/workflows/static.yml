@@ -48,7 +48,7 @@ jobs:
         with:
           node-version: '18'
       - name: Install Antora with the Antora Lunr Extension
-        run: npm i antora @antora/lunr-extension asciidoctor-kroki
+        run: npm i antora @antora/lunr-extension asciidoctor-kroki @asciidoctor/tabs
       - name: Generate Site
         run: npx antora src/docs/config/antora-playbook.yml
 
