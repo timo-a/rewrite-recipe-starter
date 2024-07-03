@@ -26,10 +26,13 @@ import java.util.Map;
 
 public class DocMain {
 
-    private static final String TEMPLATE_DIR = "/home/t/Code/openrewrite/rewrite-recipe-starter/src/docs/adoc/modules/recipes/pages";
-    private static final String COMMON_FILE = "/home/t/Code/openrewrite/rewrite-recipe-starter/src/docs/config/common.adoc";
+    private static final String TEMPLATE_DIR;
+    private static final String COMMON_FILE;
     static {
-        System.out.println("MY_PATH: " + System.getenv("MY_PATH"));
+        String ROOT = System.getenv("MY_PATH");
+        TEMPLATE_DIR = ROOT + "/src/docs/adoc/modules/recipes/pages";
+        COMMON_FILE  = ROOT + "/src/docs/config/common.adoc";
+
     }
 
     private static final Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
