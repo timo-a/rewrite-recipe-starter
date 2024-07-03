@@ -50,7 +50,7 @@ jobs:
       - name: Install Antora with the Antora Lunr Extension
         run: npm i antora @antora/lunr-extension asciidoctor-kroki
       - name: Generate Site
-        run: npx antora antora-playbook.yml
+        run: npx antora src/docs/config/antora-playbook.yml
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

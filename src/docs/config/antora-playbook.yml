@@ -4,7 +4,7 @@ site:
   start_page: component-singleton::index.adoc
 content:
   sources:
-    - url: /home/t/Code/openrewrite/rewrite-recipe-starter
+    - url: ./../../.. #point to top level
       branches: HEAD
       start_path: src/docs/adoc
 ui:
