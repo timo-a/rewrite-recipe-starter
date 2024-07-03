@@ -15,6 +15,7 @@ plugins {
     // ./gradlew rewriteRun -Drewrite.activeRecipe=org.openrewrite.recipes.OpenRewriteBestPractices
     id("org.openrewrite.rewrite") version "latest.release"
 }
+application { mainClass = "io.github.timoa.DocMain" }
 
 // Set as appropriate for your organization
 group = "io.github.timo-a"

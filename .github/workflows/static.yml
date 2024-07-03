@@ -31,13 +31,28 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: prepare build.gradle
+        run: |
+          sed -i '0,/plugins/ s/^plugins {/plugins { id("application")/' build.gradle.kts
+          sed -i '0,/}/ s/^}/}\napplication { mainClass = "io.github.timoa.DocMain" }/' build.gradle.kts
+      - name: compile docs
+        run: ./gradlew :run
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install Antora with the Antora Lunr Extension
+        run: npm i antora @antora/lunr-extension asciidoctor-kroki
+      - name: Generate Site
+        run: npx antora antora-playbook.yml
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: 'src/docs/config/dummy'
+          path: 'src/docs/config/build/site'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
