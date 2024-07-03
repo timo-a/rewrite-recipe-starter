@@ -28,10 +28,14 @@ public class DocMain {
 
     private static final String TEMPLATE_DIR = "/home/t/Code/openrewrite/rewrite-recipe-starter/src/docs/adoc/modules/recipes/pages";
     private static final String COMMON_FILE = "/home/t/Code/openrewrite/rewrite-recipe-starter/src/docs/config/common.adoc";
+    static {
+        System.out.println("MY_PATH: " + System.getenv("MY_PATH"));
+    }
+
     private static final Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
 
     public static void main(String[] args) throws IOException, TemplateException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
-
+        System.out.println("Working Directory = " + System.getProperty("user.dir"));
         cfg.setDirectoryForTemplateLoading(new File(TEMPLATE_DIR));
         cfg.setDefaultEncoding("UTF-8");
         cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
