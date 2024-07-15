@@ -78,6 +78,7 @@ public class DocMain {
         map.put("mavenPluginVersion", fetchMavenPluginVersion("openrewrite/rewrite-maven-plugin"));
         map.put("displayName", info.getDisplayName());
         map.put("description", info.getDescription());
+        map.put("gradlePluginVersion", fetchMavenPluginVersion("openrewrite/rewrite-gradle-plugin"));
 
         Map<String, Object> recipeMap = new HashMap<>();
         recipeMap.put("coordinates", recipeCoordinates);
