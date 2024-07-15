@@ -40,20 +40,20 @@ public class NormalizeSetter extends ScanningRecipe<NormalizeSetter.MethodAcc> {
     @Override
     public String getDisplayName() {
         //language=markdown
-        return "Correct the name of setter methods according to how lombok would name them";
+        return "Rename setter methods to fit lombok";
     }
 
     @Override
     public String getDescription() {
-        //language=asciidoc
+        //language=markdown
         return new StringJoiner("\n")
                 .add("Rename methods that are effectively setter to the name lombok would give them.")
                 .add("")
-                .add("Limitations: ")
+                .add("Limitations:")
                 .add("")
-                .add(" * if two methods in a class are effectively the same setter then one's name will be corrected and the others name will be left as it is.")
-                .add(" * if the correct name for a method is already taken by another method then the name will not be corrected.")
-                .add(" * method name swaps or circular renaming within a class cannot be performed because the names block each other. ")
+                .add(" - If two methods in a class are effectively the same setter then one's name will be corrected and the others name will be left as it is.")
+                .add(" - If the correct name for a method is already taken by another method then the name will not be corrected.")
+                .add(" - Method name swaps or circular renaming within a class cannot be performed because the names block each other. ")
                 .add("E.g. `int getFoo() { return ba; } int getBa() { return foo; }` stays as it is.")
                 .toString();
     }

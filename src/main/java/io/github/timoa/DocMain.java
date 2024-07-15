@@ -24,6 +24,8 @@ import java.util.stream.Stream;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.jworks.markdown_to_asciidoc.Converter;
+
 public class DocMain {
 
     private static final String TEMPLATE_DIR;
@@ -76,9 +78,9 @@ public class DocMain {
 
         Map<String, Object> map = new HashMap<>();
         map.put("mavenPluginVersion", fetchMavenPluginVersion("openrewrite/rewrite-maven-plugin"));
-        map.put("displayName", info.getDisplayName());
-        map.put("description", info.getDescription());
         map.put("gradlePluginVersion", fetchMavenPluginVersion("openrewrite/rewrite-gradle-plugin"));
+        map.put("displayName", Converter.convertMarkdownToAsciiDoc(info.getDisplayName()));
+        map.put("description", Converter.convertMarkdownToAsciiDoc(info.getDescription()));
 
         Map<String, Object> recipeMap = new HashMap<>();
         recipeMap.put("coordinates", recipeCoordinates);
