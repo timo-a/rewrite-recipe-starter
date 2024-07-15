@@ -1,7 +1,5 @@
-* xref:toplevelfile.adoc[]
-
-.Lombok
-* xref:lombok/Getter.adoc[]
+.Lombok Recipes
+* xref:lombok/Getter.adoc[Logs]
 
 ** xref:lombok/log/ConvertCommons.adoc[]
 ** xref:lombok/log/ConvertJBoss.adoc[]
@@ -15,6 +13,5 @@
 * xref:lombok/ConvertSetter.adoc[]
 * xref:lombok/ConvertNoArgsConstructor.adoc[]
 
-
-.Misc
+.Misc Recipes
 * xref:misc/UseGuavaRanges.adoc[]
