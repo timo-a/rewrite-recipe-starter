@@ -87,16 +87,11 @@ public class SummarizeGetter extends Recipe {
 
             //initialize variable to store if all encountered fields have getters
             getCursor().putMessage(ALL_FIELDS_DECORATED_ACC, true);
-            getCursor().putMessage(ALL_FIELDS_DECORATED_ACC + "2", 4);
 
             //delete methods, note down corresponding fields
             J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
 
-            System.out.println(11111);
-            int allFieldsAnnotated2 = getCursor().pollNearestMessage(ALL_FIELDS_DECORATED_ACC + "2");
             boolean allFieldsAnnotated = getCursor().pollNearestMessage(ALL_FIELDS_DECORATED_ACC);
-            System.out.println("all fields annotated: " + allFieldsAnnotated);
-            System.out.println("something changed: " + (classDeclAfterVisit != classDecl));
 
             //only thing that can have changed is removal of getter methods
             if (allFieldsAnnotated //
@@ -104,7 +99,6 @@ public class SummarizeGetter extends Recipe {
             ) {
                 TreeVisitingPrinter.printTree(classDecl);
                 TreeVisitingPrinter.printTree(classDeclAfterVisit);
-                System.out.println("adding annotation");
                 //Add annotation
                 JavaTemplate template = JavaTemplate.builder("@Getter\n")
                             .imports("lombok.Getter")
@@ -123,11 +117,8 @@ public class SummarizeGetter extends Recipe {
 
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations variableDecls, ExecutionContext ctx){
-            System.out.println();
-            System.out.println("visiting VD " + variableDecls.getVariables().get(0).getSimpleName());
             boolean allFieldsAnnotatedSoFar = getCursor().getNearestMessage(ALL_FIELDS_DECORATED_ACC);
             if (!allFieldsAnnotatedSoFar) {
-                System.out.println("not all fields annotated so far");
                 return variableDecls;
             }
 
@@ -137,15 +128,10 @@ public class SummarizeGetter extends Recipe {
 
             boolean hasGetterAnnotation = oa.isPresent();
             if (hasGetterAnnotation) {
-                System.out.println("has getter annotation");
                 List<J.Annotation> leadingAnnotations = variableDecls.getLeadingAnnotations();
-                System.out.println("leading annotations has " + leadingAnnotations.size() + " annotations");
                 List<J.Annotation> filteredLeadingAnnotations = new ArrayList<>(leadingAnnotations);
                 filteredLeadingAnnotations.remove(oa.get());
-                System.out.println("leading annotations has " + leadingAnnotations.size() + " annotations");
-                System.out.println("copy has " + filteredLeadingAnnotations.size() + " annotations");
                 J.VariableDeclarations a = variableDecls.withLeadingAnnotations(filteredLeadingAnnotations);
-                System.out.println("a has " + a.getLeadingAnnotations().size() + " annotations");
                 return a;
             } else {
                 getCursor().putMessage(ALL_FIELDS_DECORATED_ACC, false);
