@@ -15,61 +15,44 @@
  */
 package io.github.timoa.lombok;
 
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
-import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.TreeVisitingPrinter;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Statement;
 
 import java.util.*;
 
 import static java.util.Comparator.comparing;
-import static org.openrewrite.java.tree.JavaType.Variable;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class SummarizeGetter extends Recipe {
+public class AnnotataionRemoveRecipe extends Recipe {
 
     @Override
     public String getDisplayName() {
         //language=markdown
-        return "Convert getter methods to annotations";
+        return "Remove Annotation";
     }
 
     @Override
     public String getDescription() {
         //language=markdown
-        return new StringJoiner("\n")
-                .add("Convert trivial getter methods to `@Getter` annotations on their respective fields.")
-                .add("")
-                .add("Limitations:")
-                .add("")
-                .add(" - Does not add a dependency to Lombok, users need to do that manually")
-                .add(" - Ignores fields that are declared on the same line as others, e.g. `private int foo, bar;" +
-                        "Users who have such fields are advised to separate them beforehand with " +
-                        "[org.openrewrite.staticanalysis.MultipleVariableDeclaration]" +
-                        "(https://docs.openrewrite.org/recipes/staticanalysis/multiplevariabledeclarations).")
-                .add(" - Does not offer any of the configuration keys listed in https://projectlombok.org/features/GetterSetter.")
-                .toString();
+        return "remove annotation";
     }
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new Summarizer();
+        return new AnnotationRemover();
     }
 
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    private static class Summarizer extends JavaIsoVisitor<ExecutionContext> {
-        private static final String ALL_FIELDS_DECORATED_ACC = "ALL_FIELDS_DECORATED_ACC";
+    private static class AnnotationRemover extends JavaIsoVisitor<ExecutionContext> {
 
         // This method override is only here to show how to print the AST for debugging purposes.
         // You can remove this method if you don't need it.
@@ -85,42 +68,14 @@ public class SummarizeGetter extends Recipe {
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
-            //initialize variable to store if all encountered fields have getters
-            getCursor().putMessage(ALL_FIELDS_DECORATED_ACC, true);
-
             //delete methods, note down corresponding fields
             J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
 
-            boolean allFieldsAnnotated = getCursor().pollNearestMessage(ALL_FIELDS_DECORATED_ACC);
-
-            //only thing that can have changed is removal of getter methods
-            if (allFieldsAnnotated //
-                    && classDeclAfterVisit != classDecl //need to have encountered at least one getter annotation
-            ) {
-                TreeVisitingPrinter.printTree(classDecl);
-                TreeVisitingPrinter.printTree(classDeclAfterVisit);
-                //Add annotation
-                JavaTemplate template = JavaTemplate.builder("@Getter\n")
-                            .imports("lombok.Getter")
-                            .javaParser(JavaParser.fromJavaVersion()
-                                    .classpath("lombok"))
-                        .build();
-
-                J.ClassDeclaration annotatedClass = template.apply(
-                        updateCursor(classDeclAfterVisit),
-                        classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
-
-                return annotatedClass;
-            }
-            return classDecl;
+            return classDeclAfterVisit;
         }
 
         @Override
         public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations variableDecls, ExecutionContext ctx){
-            boolean allFieldsAnnotatedSoFar = getCursor().getNearestMessage(ALL_FIELDS_DECORATED_ACC);
-            if (!allFieldsAnnotatedSoFar) {
-                return variableDecls;
-            }
 
             Optional<J.Annotation> oa = variableDecls.getLeadingAnnotations().stream()
                     .filter(a -> "Getter".equals(a.getSimpleName()))
@@ -133,8 +88,6 @@ public class SummarizeGetter extends Recipe {
                 filteredLeadingAnnotations.remove(oa.get());
                 J.VariableDeclarations a = variableDecls.withLeadingAnnotations(filteredLeadingAnnotations);
                 return a;
-            } else {
-                getCursor().putMessage(ALL_FIELDS_DECORATED_ACC, false);
             }
             return variableDecls;
         }
