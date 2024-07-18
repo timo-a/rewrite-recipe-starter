@@ -34,9 +34,10 @@ class AnnotataionRemoveRecipeTest implements RewriteTest {
           .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true).classpath("lombok"));
     }
 
+    //I put spaces in the 'expected' block only to match the 'actual' but in running the test these spaces are trimmed away, so the expected block is different from what I specify!?
     @DocumentExample
     @Test
-    void removeOneFieldGetter() {
+    void removeAnnotationAbove() {
         rewriteRun(// language=java
           java(
             """
@@ -56,6 +57,33 @@ class AnnotataionRemoveRecipeTest implements RewriteTest {
               
                   
                   int foo;
+              
+              }
+              """
+          )
+        );
+    }
+
+    //works only if we expect 5 spaces, I guess the space between
+    @Test
+    void removeAnnotationBefore() {
+        rewriteRun(// language=java
+          java(
+            """
+              import lombok.Getter;
+              
+              class A {
+              
+                  @Getter int foo;
+              
+              }
+              """,
+            """
+              import lombok.Getter;
+              
+              class A {
+              
+                   int foo;
               
               }
               """

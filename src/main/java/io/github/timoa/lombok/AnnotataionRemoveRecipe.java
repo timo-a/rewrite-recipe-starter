@@ -41,7 +41,7 @@ public class AnnotataionRemoveRecipe extends Recipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return "remove annotation";
+        return "Remove annotation.";
     }
 
     @Override
@@ -49,47 +49,13 @@ public class AnnotataionRemoveRecipe extends Recipe {
         return new AnnotationRemover();
     }
 
-
     @Value
     @EqualsAndHashCode(callSuper = false)
     private static class AnnotationRemover extends JavaIsoVisitor<ExecutionContext> {
 
-        // This method override is only here to show how to print the AST for debugging purposes.
-        // You can remove this method if you don't need it.
         @Override
-        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-            // This is a useful debugging tool if you're ever unsure what the visitor is visiting
-            String printed = TreeVisitingPrinter.printTree(cu);
-            System.out.printf(printed);
-            // You must always delegate to the super method to ensure the visitor continues to visit deeper
-            return super.visitCompilationUnit(cu, ctx);
-        }
-
-        @Override
-        public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
-
-            //delete methods, note down corresponding fields
-            J.ClassDeclaration classDeclAfterVisit = super.visitClassDeclaration(classDecl, ctx);
-
-            return classDeclAfterVisit;
-        }
-
-        @Override
-        public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations variableDecls, ExecutionContext ctx){
-
-            Optional<J.Annotation> oa = variableDecls.getLeadingAnnotations().stream()
-                    .filter(a -> "Getter".equals(a.getSimpleName()))
-                    .findFirst();
-
-            boolean hasGetterAnnotation = oa.isPresent();
-            if (hasGetterAnnotation) {
-                List<J.Annotation> leadingAnnotations = variableDecls.getLeadingAnnotations();
-                List<J.Annotation> filteredLeadingAnnotations = new ArrayList<>(leadingAnnotations);
-                filteredLeadingAnnotations.remove(oa.get());
-                J.VariableDeclarations a = variableDecls.withLeadingAnnotations(filteredLeadingAnnotations);
-                return a;
-            }
-            return variableDecls;
+        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext executionContext) {
+            return null;
         }
     }
 }
