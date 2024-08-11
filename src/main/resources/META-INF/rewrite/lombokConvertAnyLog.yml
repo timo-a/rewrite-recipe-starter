@@ -17,8 +17,11 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: io.github.timoa.lombok.log.ConvertAnyLog
-displayName: Use Apache `StringUtils`
-description: Replace Spring string utilities with Apache string utilities
+displayName: Use lomboks @Log annotation instead of defining the field yourself
+description: >-
+  Applies all recipes that replace logger declarations with class level annotations. 
+  If you know which logger framework is in use you can simply use the specific recipe.
+  If, for some reason you need to cover all frameworks you can use this recipe.
 recipeList:
   - io.github.timoa.lombok.log.ConvertSlf4j
   - io.github.timoa.lombok.log.ConvertCommons
