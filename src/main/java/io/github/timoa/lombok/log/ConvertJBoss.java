@@ -35,7 +35,7 @@ public class ConvertJBoss extends ConvertLogRecipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return getDescription("@JBossLog");
+        return getDescription("@JBossLog", "org.jboss.logging.Logger");
     }
 
     @Option(displayName = "Name of the log field",
