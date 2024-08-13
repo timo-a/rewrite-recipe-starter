@@ -128,7 +128,7 @@ public class SummarizeGetter extends Recipe {
         }
 
         @Override
-        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext executionContext) {
+        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
             return annotation.getSimpleName().equals("Getter")
                     && annotation.getArguments() == null //no Access level, or other arguments
                     //should only trigger on field annotation, not class annotation
