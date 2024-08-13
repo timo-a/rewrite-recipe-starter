@@ -35,7 +35,7 @@ public class ConvertJBoss extends ConvertLogRecipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return getDescription("@JBossLog");
+        return getDescription("@JBossLog", "org.jboss.logging.Logger");
     }
 
     @Option(displayName = "Name of the log field",
@@ -50,7 +50,7 @@ public class ConvertJBoss extends ConvertLogRecipe {
         return new JbosslogVisitor(fieldName);
     }
 
-    public class JbosslogVisitor extends LogVisitor {
+    public static class JbosslogVisitor extends LogVisitor {
 
         JbosslogVisitor(String fieldName_) {
             super(fieldName_);

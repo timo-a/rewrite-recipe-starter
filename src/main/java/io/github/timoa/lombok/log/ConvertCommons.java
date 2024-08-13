@@ -35,7 +35,7 @@ public class ConvertCommons extends ConvertLogRecipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return getDescription("@CommonsLog");
+        return getDescription("@CommonsLog", "org.apache.commons.logging.Log");
     }
 
     @Option(displayName = "Name of the log field",

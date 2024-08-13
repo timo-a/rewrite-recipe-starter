@@ -12,11 +12,9 @@ public abstract class ConvertLogRecipe extends Recipe {
         return String.format("Use `%s` instead of defining the field yourself", annotation);
     }
 
-    protected String getDescription(String annotation) {
+    protected String getDescription(String annotation, String pathToLogger) {
         //language=markdown
-        return String.format("Prefer the lombok annotation `%s` over explicitly written out Logger fields.", annotation);
+        return String.format("Prefer the lombok annotation `%s` over explicitly written out `%s` fields.", annotation, pathToLogger);
     }
-
-
 
 }

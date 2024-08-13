@@ -35,7 +35,7 @@ public class ConvertUtilLog extends ConvertLogRecipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return getDescription("@Log");
+        return getDescription("@Log", "java.util.logging.Logger");
     }
 
     @Option(displayName = "Name of the log field",

@@ -35,7 +35,7 @@ public class ConvertLog4j2 extends ConvertLogRecipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return "Prefer the lombok annotation `@Log4j2` over explicitly written out Logger fields.";
+        return getDescription("@Log4j2", "org.apache.logging.log4j.Logger");
     }
 
     @Option(displayName = "Name of the log field",
