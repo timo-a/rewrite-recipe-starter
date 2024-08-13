@@ -132,7 +132,7 @@ public class SummarizeSetter extends Recipe {
         }
 
         @Override
-        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext executionContext) {
+        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
             boolean isSetterAnnotated = annotation.getSimpleName().equals("Setter")
                     && annotation.getArguments() == null; //no Access level, or other arguments
 
