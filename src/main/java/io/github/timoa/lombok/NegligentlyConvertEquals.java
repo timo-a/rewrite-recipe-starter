@@ -95,7 +95,7 @@ public class NegligentlyConvertEquals extends Recipe {
 
 
         @Override
-        public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
+        public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext ctx) {
             J.ClassDeclaration classDecl = getCursor().firstEnclosingOrThrow(J.ClassDeclaration.class);
 
             // The enclosing class of a J.MethodDeclaration must be known for a MethodMatcher to match it
