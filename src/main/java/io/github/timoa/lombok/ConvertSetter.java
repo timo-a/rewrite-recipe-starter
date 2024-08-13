@@ -50,7 +50,8 @@ public class ConvertSetter extends Recipe {
         return new StringJoiner("\n")
                 .add("Convert trivial setter methods to `@Setter` annotations on their respective fields.")
                 .add("")
-                .add("limitations:  ")
+                .add("Limitations:")
+                .add("")
                 .add(" - Does not add a dependency to Lombok, users need to do that manually")
                 .add(" - Ignores fields that are declared on the same line as others, e.g. `private int foo, bar;" +
                         "Users who have such fields are advised to separate them beforehand with " +
