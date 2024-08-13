@@ -50,7 +50,7 @@ public class ConvertJBoss extends ConvertLogRecipe {
         return new JbosslogVisitor(fieldName);
     }
 
-    public class JbosslogVisitor extends LogVisitor {
+    public static class JbosslogVisitor extends LogVisitor {
 
         JbosslogVisitor(String fieldName_) {
             super(fieldName_);
