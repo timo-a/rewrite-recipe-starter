@@ -31,6 +31,7 @@ dependencies {
     implementation("org.freemarker:freemarker:2.3.30")
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("io.github.markdown-asciidoc:markdown-to-asciidoc:2.0.1")
+    implementation("org.yaml:snakeyaml:2.2")
 
     // Refaster style recipes need the rewrite-templating annotation processor and dependency for generated recipes
     // https://github.com/openrewrite/rewrite-templating/releases

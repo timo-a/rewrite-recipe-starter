@@ -4,6 +4,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
+import io.github.timoa.docgeneration.DeclarativeRecipe;
 import lombok.Value;
 import org.apache.commons.lang3.Validate;
 import org.openrewrite.Recipe;
@@ -13,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,16 +27,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 import nl.jworks.markdown_to_asciidoc.Converter;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 public class DocMain {
 
     private static final String TEMPLATE_DIR;
+    private static final String CONFIG_DIR;
     private static final String COMMON_FILE;
+    private static final String DECLARATIVE_RECIPES;
     static {
         String ROOT = System.getenv("MY_PATH");
         TEMPLATE_DIR = ROOT + "/src/docs/adoc/modules/recipes/pages";
-        COMMON_FILE  = ROOT + "/src/docs/config/common.adoc";
-
+        CONFIG_DIR   = ROOT + "/src/docs/config";
+        COMMON_FILE  = CONFIG_DIR + "/common.ftl";
+        DECLARATIVE_RECIPES = ROOT + "/src/main/resources/META-INF/rewrite";
     }
 
     private static final Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
@@ -59,7 +67,8 @@ public class DocMain {
             addCommonPart(freeMarkerPath, stubLines);
 
             Path targetPath = getNextPath(path, ".adoc");
-            applyTemplate(freeMarkerPath, targetPath, nameAndDescription);
+            Path templatePath = Paths.get(DocMain.TEMPLATE_DIR).relativize(freeMarkerPath.toAbsolutePath());
+            applyTemplate(templatePath, targetPath, nameAndDescription);
         }
 
         /* custom templating */
@@ -82,6 +91,14 @@ public class DocMain {
         template.process(datamodel, file);
         file.flush();
         file.close();
+
+        //declarative recipes
+        cfg.setDirectoryForTemplateLoading(new File(CONFIG_DIR));
+        String filename = "ConvertAnyLog.yml";
+        Info info = fetchInfoFromYaml("lombok/log/" + filename);
+        Path freeMarkerPath = Paths.get(COMMON_FILE).getFileName();
+        targetPath = Paths.get(TEMPLATE_DIR, "lombok", "log", filename.replace(".yml", ".adoc"));
+        applyTemplate(freeMarkerPath, targetPath, info);
 
     }
 
@@ -115,7 +132,7 @@ public class DocMain {
         recipeMap.put("sonartype", recipeSonartype);
         map.put("recipe", recipeMap);
 
-        Template template = cfg.getTemplate( templatePath.toAbsolutePath().toString().substring(DocMain.TEMPLATE_DIR.length()));
+        Template template = cfg.getTemplate(templatePath.toString());
 
         // File output
         Writer file = new FileWriter(targetPath.toFile());
@@ -146,6 +163,12 @@ public class DocMain {
         String coordinates;
         String displayName;
         String description;
+        Definition definition;
+        @Value
+        static class Definition {
+            List<String> subRecipes;
+            String yaml;
+        }
     }
 
     private static Info fetchInfoFromClass(String coordinates, String[] params) throws ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
@@ -160,7 +183,23 @@ public class DocMain {
                 .getDeclaredConstructor(parameterTypes)
                 .newInstance((Object[]) params);
 
-        return new Info(coordinates, recipe.getDisplayName(), recipe.getDescription());
+        return new Info(coordinates, recipe.getDisplayName(), recipe.getDescription(), null);
+    }
+
+    private static Info fetchInfoFromYaml(String filename) throws ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, IOException {
+
+        Path resourcesPath = Paths.get(DECLARATIVE_RECIPES, filename);
+        InputStream inputStream = Files.newInputStream(resourcesPath.toFile().toPath());
+
+        Yaml yaml = new Yaml(new Constructor(DeclarativeRecipe.class, new LoaderOptions()));
+        inputStream = Files.newInputStream(resourcesPath.toFile().toPath());
+        DeclarativeRecipe declarativeRecipe = (DeclarativeRecipe) yaml.load(inputStream);
+
+        byte[] encoded = Files.readAllBytes(resourcesPath);
+        String yamlString = new String(encoded, StandardCharsets.UTF_8);
+
+        return new Info(declarativeRecipe.getName(), declarativeRecipe.getDisplayName(), declarativeRecipe.getDescription(),
+                new Info.Definition(declarativeRecipe.getRecipeList(), yamlString));
     }
 
     private static void addCommonPart(Path targetPath, List<String> stubLines) throws IOException {
