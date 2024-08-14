@@ -122,3 +122,10 @@ rootProject {
 ====
 
 
+<#if recipe.subrecipeList??>
+    == Definition
+    <#list recipe.subrecipeList as sub>
+        ${sub}
+    </#list>
+<#else>
+</#if>

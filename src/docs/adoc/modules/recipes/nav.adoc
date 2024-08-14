@@ -6,6 +6,7 @@
 ** xref:lombok/log/ConvertLog4j2.adoc[]
 ** xref:lombok/log/ConvertSlf4j.adoc[]
 ** xref:lombok/log/ConvertUtil.adoc[]
+** xref:lombok/log/ConvertAnyLog.adoc[]
 
 * xref:lombok/NormalizeGetter.adoc[]
 * xref:lombok/NormalizeSetter.adoc[]
