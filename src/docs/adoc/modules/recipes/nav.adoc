@@ -1,5 +1,5 @@
 .Lombok Recipes
-* xref:lombok/Getter.adoc[Logs]
+* xref:lombok/log/a_LogManual.adoc[Logs]
 
 ** xref:lombok/log/ConvertCommons.adoc[]
 ** xref:lombok/log/ConvertJBoss.adoc[]
