@@ -46,7 +46,8 @@ public class DocMain {
         cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
 
         BiPredicate<Path, BasicFileAttributes> matcher = (p, bfa) -> bfa.isRegularFile()
-                && p.getFileName().toString().matches(".*\\.stub");
+                && p.getFileName().toString().matches(".*\\.stub")
+                && !p.getFileName().toString().startsWith("a_");//marker prefix for custom pages
 
         List<Path> collect = Files.find(Paths.get(TEMPLATE_DIR), 999, matcher).collect(Collectors.toList());
 
@@ -60,6 +61,28 @@ public class DocMain {
             Path targetPath = getNextPath(path, ".adoc");
             applyTemplate(freeMarkerPath, targetPath, nameAndDescription);
         }
+
+        /* custom templating */
+        // log to lombok manual
+        //read lines from slf4j result [tabs] ==== .... ====
+        List<String> tabSource = Files.readAllLines(Paths.get(TEMPLATE_DIR + "/lombok/log/ConvertSlf4j.adoc"));
+        List<String> slice1 = tabSource.subList(tabSource.indexOf("[tabs]"), tabSource.size());
+        int index2 = 2 + slice1.subList(2, slice1.size()).indexOf("====");
+        List<String> targetLines = slice1.subList(0, index2 + 1);
+
+        HashMap<String, Object> datamodel = new HashMap<>();
+        datamodel.put("applytabs", targetLines);
+
+        Path templatePath = Paths.get(TEMPLATE_DIR + "/lombok/log/__LogManual.ftl");
+        Template template = cfg.getTemplate( templatePath.toAbsolutePath().toString().substring(DocMain.TEMPLATE_DIR.length()));
+
+        // File output
+        Path targetPath = Paths.get(TEMPLATE_DIR + "/lombok/log/a_LogManual.adoc");//somehow leading underscores are not recognized by antora
+        Writer file = new FileWriter(targetPath.toFile());
+        template.process(datamodel, file);
+        file.flush();
+        file.close();
+
     }
 
     private static Path getNextPath(Path path, String suffix) {
@@ -143,7 +166,10 @@ public class DocMain {
     private static void addCommonPart(Path targetPath, List<String> stubLines) throws IOException {
 
         List<String> commonLines = Files.readAllLines(Paths.get(COMMON_FILE));
-        List<String> targetLines = Stream.concat(commonLines.stream(), stubLines.stream().skip(2)).collect(Collectors.toList());
+        List<String> targetLines = Stream.concat(
+                commonLines.stream(),
+                stubLines.stream().skip(2)//skip first two lines as they only include process info
+        ).collect(Collectors.toList());
 
         Files.write(targetPath, targetLines, Charset.defaultCharset());
     }
