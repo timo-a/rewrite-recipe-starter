@@ -1,0 +1,22 @@
+= Miscellaneous Notes
+
+== Build
+
+[source, Bash]
+----
+#cd path/to/repo
+sed -i '0,/plugins/ s/^plugins {/plugins { id("application")/' build.gradle.kts
+sed -i '0,/}/ s/^}/}\napplication { mainClass = "io.github.timoa.DocMain" }/' build.gradle.kts
+export MY_PATH=$(pwd)
+./gradlew :run
+npx antora src/docs/config/antora-playbook.yml
+firefox http://localhost:63342/rewrite-recipe-starter/src/docs/config/build/site/component-singleton/0/index.html
+----
+
+== Recipe Wishlist
+
+- Recipe that converts class annotations to @Data
+- Recipe that converts class annotations to @Value. +
+A bit more work since the recipe will need to remove final (and private?) modifiers.
+- Recipe that converts Bean style DTOs (noargs constructor, then setters) into immutable objects , i.e. builder call chain
+- Recipe that restricts BigDecimal instantiation to String (I have it lying around somewhere)
