@@ -1,0 +1,4 @@
+.Maintainer notes
+* xref:maintainers_notes/build_and_more.adoc[]
+* ADR
+** xref:madr/001_Use_Antora.adoc[]
