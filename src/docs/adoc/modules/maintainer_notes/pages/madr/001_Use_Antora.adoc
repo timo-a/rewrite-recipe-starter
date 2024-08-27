@@ -1,0 +1,80 @@
+= 001 Antora is used as Site Generator
+
+* date: 2024-06-23
+* status: accepted
+// :status: "{proposed | rejected | accepted | deprecated | … | superseded by ADR-0005}"
+
+== Context and Problem Statement
+
+To be more accessible, this repo should have a nice documentation like the https://docs.openrewrite.org/recipes/java/migrate/upgradetojava21[original].
+Every Recipe should be documented, but there should also be How-Tos.
+The documentation of the single recipes should be structurally similar to the official recipe catalog.
+For that we need a static site generator, that can host our page on GitHub pages.
+
+// This is an optional element. Feel free to remove.
+== Decision Drivers
+
+* I don't know much about frontend stuff, don't want to invest time to learn
+* I don't have much time for maintenance
+* I know AsciiDoc would like to use it again
+
+== Considered Options
+
+* Antora
+* DocToolChain
+* What OpenRewrite uses
+* Something else
+
+== Decision Outcome
+
+Chosen option: "Use Antora", because it is something new but not too different from docToolchain.
+
+// This is an optional element. Feel free to remove.
+=== Consequences
+
+* Good, because I can generate Docs with a modern tool
+* Bad, because `@DisplayName` and `@Description` of the recipes are in Markdown, need to be converted to AsciiDoc now. (see also xref:madr/002_DisplayName_and_Description_are_given_in_Asciidoc.adoc[])
+* Bad, because customizing the UI will be difficult.
+
+== Pros and Cons of the Options
+
+=== Antora
+
+https://antora.org/ Git friendly, AsciiDoc based documentation framework.
+
+// This is an optional element. Feel free to remove.
+{example | description | pointer to more information | …}
+
+* Good, because seems actively maintained
+* Good, because sleek appearance
+* Good, opportunity to learn something new
+* Bad, because unclear how much effort to get into it
+* Bad, because https://gitlab.com/antora/antora-ui-default/-/issues/216[no dark mode]footnote:[Seems to have been implemented in other non-default UIs: https://github.com/spring-io/antora-ui-spring/issues/6]
+
+=== DocToolChain
+
+http://doctoolchain.org/docToolchain/v2.0.x/index.html Generic framework that can convert all sorts of Artifacts (such as AsciiDoc files) to a Microsite or other destinations (Confluence, Word, ...)
+
+* Good, because I already know it
+* Good, because matured, feature complete
+* Good, because I don't need to learn JavaScript
+* Bad, because https://github.com/docToolchain/docToolchain/issues?q=dark+mode[no dark mode] either
+* Bad, because does not seem actively maintained (still new releases, but many open issues)
+* Bad, because uses old tech stack
+** default UI (docsy) looks a bit old
+** based on JBake (last release 2021-05-15, Release candidate out for over a year...)
+** customization possible with Groovy, better than learning JavaScript but not 'hip' either.
+
+=== What OpenRewrite uses
+
+I haven't looked to deep into what they are using.
+It seems to be a custom solution (actually based on GitBook).
+
+* Good, because nice opportunity to get familiar with GitBook
+* Bad, because it may give the false impression that I am affiliated with them or pretend to be.
+* Bad, because their solution does more than I need ("AI Search")
+* Bad, because probably tough to keep up maintaining my own fork of their docs.
+
+=== Something Else
+
+I'm not aware of any alternatives that are significantly better than Antora and don't want to invest too many resources on fining and learning a new documentation framework.
