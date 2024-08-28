@@ -123,9 +123,21 @@ rootProject {
 
 
 <#if recipe.subrecipeList??>
-    == Definition
+
+== Definition
+
+[tabs]
+====
+Recipe List::
     <#list recipe.subrecipeList as sub>
-        ${sub}
+        - ${sub}
     </#list>
+Yaml Recipe List::
++
+[source,yaml]
+--
+${recipe.yamlString}
+--
+====
 <#else>
 </#if>

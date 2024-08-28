@@ -59,6 +59,8 @@ public class DocMain {
 
         List<Path> collect = Files.find(Paths.get(TEMPLATE_DIR), 999, matcher).collect(Collectors.toList());
 
+        Map<String, Path> coordinatesToPaths = new HashMap<>();
+
         for (Path path : collect) {
             List<String> stubLines = Files.readAllLines(path);
             Info nameAndDescription = extractNameAndDescription(stubLines);
@@ -69,6 +71,7 @@ public class DocMain {
             Path targetPath = getNextPath(path, ".adoc");
             Path templatePath = Paths.get(DocMain.TEMPLATE_DIR).relativize(freeMarkerPath.toAbsolutePath());
             applyTemplate(templatePath, targetPath, nameAndDescription);
+            coordinatesToPaths.put(nameAndDescription.coordinates, Paths.get(DocMain.TEMPLATE_DIR).relativize(targetPath));
         }
 
         /* custom templating */
@@ -96,6 +99,10 @@ public class DocMain {
         cfg.setDirectoryForTemplateLoading(new File(CONFIG_DIR));
         String filename = "ConvertAnyLog.yml";
         Info info = fetchInfoFromYaml("lombok/log/" + filename);
+        for (int i = 0; i < info.definition.subRecipes.size(); i++) {
+            String coordinates = info.definition.subRecipes.get(i);
+            info.definition.subRecipes.set(i, String.format("xref:%s[%s]", coordinatesToPaths.get(coordinates), coordinates));
+        }
         Path freeMarkerPath = Paths.get(COMMON_FILE).getFileName();
         targetPath = Paths.get(TEMPLATE_DIR, "lombok", "log", filename.replace(".yml", ".adoc"));
         applyTemplate(freeMarkerPath, targetPath, info);
@@ -130,6 +137,10 @@ public class DocMain {
         recipeMap.put("url", recipeUrl);
         recipeMap.put("issue", recipeIssue);
         recipeMap.put("sonartype", recipeSonartype);
+        if (info.getDefinition() != null) {
+            recipeMap.put("subrecipeList", info.definition.subRecipes);
+            recipeMap.put("yamlString", info.definition.yaml);
+        }
         map.put("recipe", recipeMap);
 
         Template template = cfg.getTemplate(templatePath.toString());
@@ -197,9 +208,10 @@ public class DocMain {
 
         byte[] encoded = Files.readAllBytes(resourcesPath);
         String yamlString = new String(encoded, StandardCharsets.UTF_8);
-
+        int i = yamlString.indexOf("\n---\ntype");
+        String yamlStringTruncated = yamlString.substring(i + 1);
         return new Info(declarativeRecipe.getName(), declarativeRecipe.getDisplayName(), declarativeRecipe.getDescription(),
-                new Info.Definition(declarativeRecipe.getRecipeList(), yamlString));
+                new Info.Definition(declarativeRecipe.getRecipeList(), yamlStringTruncated));
     }
 
     private static void addCommonPart(Path targetPath, List<String> stubLines) throws IOException {
