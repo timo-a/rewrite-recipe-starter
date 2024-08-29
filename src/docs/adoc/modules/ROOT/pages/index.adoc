@@ -1,4 +1,6 @@
-= I am the index!
+= Overview
 :navtitle: Welcome
 
-What up?
+This recipe collection features both lombok recipes and miscellaneous recipes.
+You can browse through them in the bar on the left.
+Each recipe comes wth instructions on how to run it, however if you are new to OpenRewrite you might want to check out https://docs.openrewrite.org/running-recipes first
