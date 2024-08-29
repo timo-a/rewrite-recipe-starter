@@ -1,6 +1,6 @@
 site:
   title: Antora Demo Site
-  url: https://my-antora-demo-site.org
+  url: https://timo-a.github.io/rewrite-recipe-starter
   start_page: component-singleton::index.adoc
 content:
   sources:
@@ -33,6 +33,9 @@ ui:
         static_files:
         - .nojekyll
     - path: .nojekyll
+    - path: partials/header-content.hbs
+#      contents: ./custom-ui/header-content.hbs
+      contents: ./custom-ui/partials/antora.hbs
 
 antora:
   extensions:

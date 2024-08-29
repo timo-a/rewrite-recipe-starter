@@ -1,4 +1,0 @@
-.Getting Started
-* xref:download.adoc[]
-* xref:install.adoc[]
-* xref:run.adoc[]
