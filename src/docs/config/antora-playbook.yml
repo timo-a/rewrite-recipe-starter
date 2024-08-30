@@ -35,7 +35,7 @@ ui:
     - path: .nojekyll
     - path: partials/header-content.hbs
 #      contents: ./custom-ui/header-content.hbs
-      contents: ./custom-ui/partials/antora.hbs
+      contents: ./custom-ui/partials/header-content.hbs
 
 antora:
   extensions:
