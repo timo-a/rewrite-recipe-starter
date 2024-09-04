@@ -5,6 +5,10 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import io.github.timoa.docgeneration.DeclarativeRecipe;
+import io.github.timoa.lombok.SummarizeDataParameterized;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.Value;
 import org.apache.commons.lang3.Validate;
 import org.openrewrite.Recipe;
@@ -86,7 +90,7 @@ public class DocMain {
         datamodel.put("applytabs", targetLines);
 
         Path templatePath = Paths.get(TEMPLATE_DIR + "/lombok/log/__LogManual.ftl");
-        Template template = cfg.getTemplate( templatePath.toAbsolutePath().toString().substring(DocMain.TEMPLATE_DIR.length()));
+        Template template = cfg.getTemplate(templatePath.toAbsolutePath().toString().substring(DocMain.TEMPLATE_DIR.length()));
 
         // File output
         Path targetPath = Paths.get(TEMPLATE_DIR + "/lombok/log/a_LogManual.adoc");//somehow leading underscores are not recognized by antora
@@ -96,17 +100,34 @@ public class DocMain {
         file.close();
 
         //declarative recipes
-        cfg.setDirectoryForTemplateLoading(new File(CONFIG_DIR));
-        String filename = "ConvertAnyLog.yml";
-        Info info = fetchInfoFromYaml("lombok/log/" + filename);
-        for (int i = 0; i < info.definition.subRecipes.size(); i++) {
-            String coordinates = info.definition.subRecipes.get(i);
-            info.definition.subRecipes.set(i, String.format("xref:%s[%s]", coordinatesToPaths.get(coordinates), coordinates));
-        }
-        Path freeMarkerPath = Paths.get(COMMON_FILE).getFileName();
-        targetPath = Paths.get(TEMPLATE_DIR, "lombok", "log", filename.replace(".yml", ".adoc"));
-        applyTemplate(freeMarkerPath, targetPath, info);
+        //todo maintain target path in a comment line in the declarative recipe
+        Path[][] sourceTargetPairs = {
+            { Paths.get("lombok", "log", "ConvertAnyLog.yml"),
+              Paths.get("lombok", "log", "ConvertAnyLog.adoc")},
+            { Paths.get("lombok", "SummarizeData.yml"),
+              Paths.get("lombok", "SummarizeData.adoc")},
+            { Paths.get("lombok", "SummarizeDataNegligently.yml"),
+              Paths.get("lombok", "SummarizeDataNegligently.adoc")},
+        };
 
+        coordinatesToPaths.put("io.github.timoa.lombok.SummarizeData", Paths.get("lombok","SummarizeData.adoc"));
+        coordinatesToPaths.put("io.github.timoa.lombok.SummarizeDataNegligently", Paths.get("lombok", "SummarizeDataNegligently.adoc"));
+
+        for (Path[] pair : sourceTargetPairs) {
+            Path source = pair[0];
+            Path target = pair[1];
+            cfg.setDirectoryForTemplateLoading(new File(CONFIG_DIR));
+            Info info = fetchInfoFromYaml(source.toString()); // e.g. lombok/log/ConvertAnyLog.yml
+
+            for (Info.SubRecipe subRecipe: info.definition.subRecipes) {
+                String coordinates = subRecipe.getCoordinates();
+
+                subRecipe.setCoordinates(String.format("xref:%s[%s]", coordinatesToPaths.get(coordinates), coordinates));
+            }
+            Path freeMarkerPath = Paths.get(COMMON_FILE).getFileName();
+            targetPath = Paths.get(TEMPLATE_DIR).resolve(target);
+            applyTemplate(freeMarkerPath, targetPath, info);
+        }
     }
 
     private static Path getNextPath(Path path, String suffix) {
@@ -138,7 +159,26 @@ public class DocMain {
         recipeMap.put("issue", recipeIssue);
         recipeMap.put("sonartype", recipeSonartype);
         if (info.getDefinition() != null) {
-            recipeMap.put("subrecipeList", info.definition.subRecipes);
+            List<Map<String, Object>> subrecipeList = info.definition.subRecipes
+                    .stream()
+                    .map(sr -> {
+                        Map<String, Object> subrecipeMap = new HashMap<>();
+                        subrecipeMap.put("name", sr.getCoordinates());
+                        if (recipeCoordinates.endsWith("Negligently")) {
+                            System.out.println(sr.parameters);
+                            sr.parameters.entrySet().forEach(
+                                    entry -> {
+                                        if (entry.getValue() instanceof List) {
+                                            List<String> stringList = (List<String>) entry.getValue();
+                                            entry.setValue(String.join(", ", stringList));
+                                        }
+                                    }
+                            );
+                        }
+                        subrecipeMap.put("parameters", sr.parameters);
+                        return subrecipeMap;})
+                    .collect(Collectors.toList());
+            recipeMap.put("subrecipeList", subrecipeList);
             recipeMap.put("yamlString", info.definition.yaml);
         }
         map.put("recipe", recipeMap);
@@ -177,8 +217,15 @@ public class DocMain {
         Definition definition;
         @Value
         static class Definition {
-            List<String> subRecipes;
+            List<SubRecipe> subRecipes;
             String yaml;
+        }
+        @AllArgsConstructor
+        static class SubRecipe {
+            @Setter
+            @Getter
+            String coordinates;
+            Map<String, Object> parameters;
         }
     }
 
@@ -190,28 +237,58 @@ public class DocMain {
         }
 
         Class<?> clazz = Class.forName(coordinates);
-        Recipe recipe = (Recipe) clazz
-                .getDeclaredConstructor(parameterTypes)
-                .newInstance((Object[]) params);
+        Recipe recipe;
+        //instantiate Recipe class to get name and description
+        if ("io.github.timoa.lombok.SummarizeDataParameterized".equals(coordinates)) {
+            //todo find a way to represent lists in the `dummy-parameter-values` line in the stub
+            recipe = new SummarizeDataParameterized(Collections.emptyList());
+        } else {
+            recipe = (Recipe) clazz
+                    .getDeclaredConstructor(parameterTypes)
+                    .newInstance((Object[]) params);
+        }
 
         return new Info(coordinates, recipe.getDisplayName(), recipe.getDescription(), null);
     }
 
-    private static Info fetchInfoFromYaml(String filename) throws ClassNotFoundException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, IOException {
-
-        Path resourcesPath = Paths.get(DECLARATIVE_RECIPES, filename);
-        InputStream inputStream = Files.newInputStream(resourcesPath.toFile().toPath());
+    private static Info fetchInfoFromYaml(String filename) throws IOException {
 
         Yaml yaml = new Yaml(new Constructor(DeclarativeRecipe.class, new LoaderOptions()));
-        inputStream = Files.newInputStream(resourcesPath.toFile().toPath());
-        DeclarativeRecipe declarativeRecipe = (DeclarativeRecipe) yaml.load(inputStream);
+        Path resourcesPath = Paths.get(DECLARATIVE_RECIPES, filename);
+        InputStream inputStream = Files.newInputStream(resourcesPath.toFile().toPath());
+        DeclarativeRecipe declarativeRecipe = yaml.load(inputStream);
 
+        //read as string
         byte[] encoded = Files.readAllBytes(resourcesPath);
         String yamlString = new String(encoded, StandardCharsets.UTF_8);
         int i = yamlString.indexOf("\n---\ntype");
         String yamlStringTruncated = yamlString.substring(i + 1);
+
         return new Info(declarativeRecipe.getName(), declarativeRecipe.getDisplayName(), declarativeRecipe.getDescription(),
-                new Info.Definition(declarativeRecipe.getRecipeList(), yamlStringTruncated));
+                new Info.Definition(
+                        Arrays
+                                .stream(declarativeRecipe.getRecipeList())
+                                .map(e -> e instanceof String ? castSubrecipe((String)e)
+                                                              : castSubrecipe((Map<String, Map<String, Object>>) e))
+                                .collect(Collectors.toList()),
+                        yamlStringTruncated));
+    }
+
+    private static Info.SubRecipe castSubrecipe(String entry) {
+        return new Info.SubRecipe(entry, new HashMap<>());
+    }
+
+    private static Info.SubRecipe castSubrecipe(Map<String, Map<String, Object>> entry) {
+        Map.Entry<String, Map<String, Object>> singleEntry = entry.entrySet().iterator().next();
+        String name = singleEntry.getKey();
+        Map<String, Object> parameters = singleEntry.getValue();
+        parameters.entrySet().forEach(e -> {
+            if (e.getValue() == null) {//null is not parsed as a string but as `null`, leads to error
+                e.setValue("null");
+            }
+        });
+
+        return new Info.SubRecipe(name, parameters);
     }
 
     private static void addCommonPart(Path targetPath, List<String> stubLines) throws IOException {

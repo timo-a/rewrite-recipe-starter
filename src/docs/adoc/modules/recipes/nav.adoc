@@ -13,6 +13,11 @@
 * xref:lombok/ConvertGetter.adoc[]
 * xref:lombok/ConvertSetter.adoc[]
 * xref:lombok/ConvertNoArgsConstructor.adoc[]
+* xref:lombok/SummarizeGetter.adoc[]
+* xref:lombok/SummarizeSetter.adoc[]
+* xref:lombok/SummarizeDataParameterized.adoc[]
+* xref:lombok/SummarizeData.adoc[]
+* xref:lombok/SummarizeDataNegligently.adoc[]
 
 .Misc Recipes
 * xref:misc/UseGuavaRanges.adoc[]

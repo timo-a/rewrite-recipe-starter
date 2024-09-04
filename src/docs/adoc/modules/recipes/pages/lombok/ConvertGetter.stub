@@ -1,2 +1,2 @@
-:recipe-coordinates: io.github.timoa.lombok.ConvertSetter
+:recipe-coordinates: io.github.timoa.lombok.ConvertGetter
 :dummy-parameter-values:
