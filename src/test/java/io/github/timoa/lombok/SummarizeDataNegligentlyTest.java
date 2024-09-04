@@ -23,11 +23,11 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-class SummarizeDataTest implements RewriteTest {
+class SummarizeDataNegligentlyTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {
-        spec.recipeFromResources("io.github.timoa.lombok.SummarizeData")
+        spec.recipeFromResources("io.github.timoa.lombok.SummarizeDataNegligently")
           .parser(JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true)
             .classpath("lombok"));
     }
@@ -38,14 +38,10 @@ class SummarizeDataTest implements RewriteTest {
         rewriteRun(// language=java
           java(
             """
-              import lombok.ToString;
-              import lombok.EqualsAndHashCode;
               import lombok.Getter;
               import lombok.Setter;
               import lombok.RequiredArgsConstructor;
               
-              @ToString
-              @EqualsAndHashCode
               @Getter
               @Setter
               @RequiredArgsConstructor
@@ -62,7 +58,7 @@ class SummarizeDataTest implements RewriteTest {
     }
 
     @Test
-    void otherAnnotationAbove() {
+    void replaceWhenOptionalAnnotationsPresent() {
         rewriteRun(// language=java
           java(
             """
@@ -71,9 +67,7 @@ class SummarizeDataTest implements RewriteTest {
               import lombok.Getter;
               import lombok.Setter;
               import lombok.RequiredArgsConstructor;
-              import lombok.extern.java.Log;
               
-              @Log
               @ToString
               @EqualsAndHashCode
               @Getter
@@ -83,42 +77,8 @@ class SummarizeDataTest implements RewriteTest {
               """,
             """
               import lombok.Data;
-              import lombok.extern.java.Log;
               
               @Data
-              @Log
-              class A {}
-              """
-          )
-        );
-    }
-
-    @Test
-    void otherAnnotationBelow() {
-        rewriteRun(// language=java
-          java(
-            """
-              import lombok.ToString;
-              import lombok.EqualsAndHashCode;
-              import lombok.Getter;
-              import lombok.Setter;
-              import lombok.RequiredArgsConstructor;
-              import lombok.extern.java.Log;
-              
-              @ToString
-              @EqualsAndHashCode
-              @Getter
-              @Setter
-              @RequiredArgsConstructor
-              @Log
-              class A {}
-              """,
-            """
-              import lombok.Data;
-              import lombok.extern.java.Log;
-              
-              @Data
-              @Log
               class A {}
               """
           )

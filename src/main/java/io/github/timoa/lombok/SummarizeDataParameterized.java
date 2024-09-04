@@ -25,6 +25,8 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,7 +35,7 @@ import static java.util.Comparator.comparing;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
-public class SummarizeData extends Recipe {
+public class SummarizeDataParameterized extends Recipe {
     @Override
     public String getDisplayName() {
         return "Summarize class annotations into @Data";
@@ -44,16 +46,16 @@ public class SummarizeData extends Recipe {
         return "Summarize class annotations into @Data.";
     }
 
+    List<String> exceptions;
+
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new SummarizeData.Summarizer();
+        return new SummarizeDataParameterized.Summarizer(exceptions == null ? Collections.emptyList(): exceptions);
     }
 
-    @Value
-    @EqualsAndHashCode(callSuper = false)
     private static class Summarizer extends JavaIsoVisitor<ExecutionContext> {
 
-        Set<String> needed = Stream
+        Set<String> annotationsToReplace = Stream
                 .of(
                         "ToString",
                         "EqualsAndHashCode",
@@ -62,15 +64,31 @@ public class SummarizeData extends Recipe {
                         "RequiredArgsConstructor")
                 .collect(Collectors.toSet());
 
+        Set<String> needed;
+
+        public Summarizer(List<String> exceptions) {
+            needed = annotationsToReplace
+                    .stream()
+                    .filter(a -> !exceptions.contains(a))
+                    .collect(Collectors.toSet());
+        }
+
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
             J.ClassDeclaration visited = super.visitClassDeclaration(classDecl, ctx);
-            int annotationsRemoved = classDecl.getLeadingAnnotations().size() - visited.getLeadingAnnotations().size();
 
-            if (visited != classDecl &&
-                    //since duplicate annotations are not allowed, we expect exactly as many annotations removed as needed
-                    annotationsRemoved == needed.size() ) {
+            Set<String> namesOfRemainingAnotations = visited.getLeadingAnnotations()
+                    .stream()
+                    .map(J.Annotation::getSimpleName)
+                    .collect(Collectors.toSet());
+            Set<String> namesOfRemovedAnnotations = classDecl.getLeadingAnnotations()
+                    .stream()
+                    .map(J.Annotation::getSimpleName)
+                    .filter(a -> !namesOfRemainingAnotations.contains(a))
+                    .collect(Collectors.toSet());
+
+            if (visited != classDecl && namesOfRemovedAnnotations.containsAll(needed)) {
 
                 maybeRemoveImport("lombok.ToString");
                 maybeRemoveImport("lombok.EqualsAndHashCode");
@@ -96,7 +114,7 @@ public class SummarizeData extends Recipe {
 
         @Override
         public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
-            return needed.contains(annotation.getSimpleName())
+            return annotationsToReplace.contains(annotation.getSimpleName())
                     && annotation.getArguments() == null //no arguments of any kind. Too strict?
                     //should only trigger on class annotation
                     && getCursor().getParent().getValue() instanceof J.ClassDeclaration
