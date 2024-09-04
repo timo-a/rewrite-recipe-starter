@@ -17,7 +17,7 @@
 ---
 type: specs.openrewrite.org/v1beta/recipe
 name: io.github.timoa.lombok.SummarizeDataNegligently
-displayName: Summarize class annotations into @Data
+displayName: Summarize class annotations into @Data negligently
 description: >-
   Summarize class annotations into @Data even if @ToString or @EqualsAndHashCode are missing. You might need to manually clean up the result!.
 recipeList:

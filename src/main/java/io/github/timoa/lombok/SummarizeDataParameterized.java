@@ -97,7 +97,6 @@ public class SummarizeDataParameterized extends Recipe {
                 maybeRemoveImport("lombok.RequiredArgsConstructor");
                 maybeAddImport("lombok.Data");
 
-
                 JavaTemplate template = JavaTemplate.builder("@Data\n")
                         .imports("lombok.Data")
                         .javaParser(JavaParser.fromJavaVersion().classpath("lombok"))
@@ -106,9 +105,7 @@ public class SummarizeDataParameterized extends Recipe {
                 return template.apply(
                         updateCursor(visited),
                         visited.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
-
             }
-
             return classDecl;
         }
 
