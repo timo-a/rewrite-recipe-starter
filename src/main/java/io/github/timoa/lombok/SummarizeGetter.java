@@ -15,8 +15,7 @@
  */
 package io.github.timoa.lombok;
 
-import lombok.EqualsAndHashCode;
-import lombok.Value;
+import lombok.*;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
