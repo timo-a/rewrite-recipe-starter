@@ -130,7 +130,10 @@ rootProject {
 ====
 Recipe List::
     <#list recipe.subrecipeList as sub>
-        - ${sub}
+        * ${sub.name}
+        <#list sub.parameters as key, value>
+            ** ${key}: ${value}
+        </#list>
     </#list>
 Yaml Recipe List::
 +
