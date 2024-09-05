@@ -164,17 +164,16 @@ public class DocMain {
                     .map(sr -> {
                         Map<String, Object> subrecipeMap = new HashMap<>();
                         subrecipeMap.put("name", sr.getCoordinates());
-                        if (recipeCoordinates.endsWith("Negligently")) {
-                            System.out.println(sr.parameters);
-                            sr.parameters.entrySet().forEach(
-                                    entry -> {
-                                        if (entry.getValue() instanceof List) {
-                                            List<String> stringList = (List<String>) entry.getValue();
-                                            entry.setValue(String.join(", ", stringList));
-                                        }
+                        sr.parameters.entrySet().forEach(
+                                entry -> {
+                                    if (entry.getValue() instanceof List) {
+                                        List<String> stringList = (List<String>) entry.getValue();
+                                        entry.setValue("`" + String.join("`, `", stringList) + "`");
+                                    } else if(entry.getValue() instanceof String) {
+                                        entry.setValue("`" + entry.getValue() + "`");
                                     }
-                            );
-                        }
+                                }
+                        );
                         subrecipeMap.put("parameters", sr.parameters);
                         return subrecipeMap;})
                     .collect(Collectors.toList());
