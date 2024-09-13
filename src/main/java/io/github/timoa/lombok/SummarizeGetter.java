@@ -55,17 +55,6 @@ public class SummarizeGetter extends Recipe {
     private static class Summarizer extends JavaIsoVisitor<ExecutionContext> {
         private static final String ALL_FIELDS_DECORATED_ACC = "ALL_FIELDS_DECORATED_ACC";
 
-        // This method override is only here to show how to print the AST for debugging purposes.
-        // You can remove this method if you don't need it.
-        @Override
-        public J.CompilationUnit visitCompilationUnit(J.CompilationUnit cu, ExecutionContext ctx) {
-            // This is a useful debugging tool if you're ever unsure what the visitor is visiting
-            String printed = TreeVisitingPrinter.printTree(cu);
-            System.out.printf(printed);
-            // You must always delegate to the super method to ensure the visitor continues to visit deeper
-            return super.visitCompilationUnit(cu, ctx);
-        }
-
         @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
