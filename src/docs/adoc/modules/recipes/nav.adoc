@@ -21,3 +21,4 @@
 
 .Misc Recipes
 * xref:misc/UseGuavaRanges.adoc[]
+* xref:misc/UseStringForBigDecimal.adoc[]

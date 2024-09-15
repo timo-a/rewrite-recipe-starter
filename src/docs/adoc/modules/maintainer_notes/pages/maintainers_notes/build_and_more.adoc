@@ -15,8 +15,6 @@ firefox http://localhost:63342/rewrite-recipe-starter/src/docs/config/build/site
 
 == Recipe Wishlist
 
-- Recipe that converts class annotations to @Data
 - Recipe that converts class annotations to @Value. +
 A bit more work since the recipe will need to remove final (and private?) modifiers.
 - Recipe that converts Bean style DTOs (noargs constructor, then setters) into immutable objects , i.e. builder call chain
-- Recipe that restricts BigDecimal instantiation to String (I have it lying around somewhere)
