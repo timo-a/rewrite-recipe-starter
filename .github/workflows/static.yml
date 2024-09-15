@@ -31,15 +31,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: prepare build.gradle
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '21'
+      - name: prepare build.gradle #specify the main class that we need for the docs
         run: |
           sed -i '0,/plugins/ s/^plugins {/plugins { id("application")/' build.gradle.kts
           sed -i '0,/}/ s/^}/}\napplication { mainClass = "io.github.timoa.DocMain" }/' build.gradle.kts
 
       - name: find out pwd
         run: echo "MY_PATH=$(pwd)" >> "$GITHUB_ENV"
+      - name: display gradle version info
+        run: |
+          ./gradlew --help >> /dev/null #downloads and installs gradle, we don't want to print these messages
+          echo "## Version Info for Debugging" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`"                        >> $GITHUB_STEP_SUMMARY
+          ./gradlew --version                  >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`"                        >> $GITHUB_STEP_SUMMARY
+
       - name: compile docs
-        run: ./gradlew :run
+        run: ./gradlew :run --warning-mode all
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
