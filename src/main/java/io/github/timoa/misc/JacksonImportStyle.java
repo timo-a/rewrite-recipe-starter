@@ -33,6 +33,7 @@ public class JacksonImportStyle extends NamedStyles {
                 .importPackage("com.fasterxml.jackson.other.modules.*")
                 .blankLine()
                 .importStaticAllOthers()
+                .classCountToUseStarImport(Integer.MAX_VALUE)//disable collapsing imports to *
                 .build();
     }
 
