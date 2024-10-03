@@ -1,4 +1,4 @@
-package io.github.timoa;
+package io.github.timoa.misc;
 
 import org.openrewrite.java.style.ImportLayoutStyle;
 import org.openrewrite.style.NamedStyles;
@@ -20,10 +20,16 @@ public class JacksonImportStyle extends NamedStyles {
 
     private static ImportLayoutStyle importLayout() {
         return ImportLayoutStyle.builder()
+                .importPackage("java.*")
+                .blankLine()
                 .importAllOthers()
                 .blankLine()
+                .importPackage("com.fasterxml.jackson.annotation.*")
+                .blankLine()
                 .importPackage("com.fasterxml.jackson.core.*")
-                .importPackage("tools.jackson.*")
+                .importPackage("com.fasterxml.jackson.databind.*")
+                .blankLine()
+                .importPackage("com.fasterxml.jackson.other.modules.*")
                 .blankLine()
                 .importStaticAllOthers()
                 .build();
