@@ -9,6 +9,8 @@ import org.openrewrite.style.NamedStyles;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
+import java.util.Arrays;
+
 import static java.util.Collections.*;
 import static org.openrewrite.Tree.randomId;
 import static org.openrewrite.java.Assertions.java;
@@ -83,13 +85,7 @@ class JacksonImportStyleTest implements RewriteTest {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().styles(
             singletonList(
-              new JacksonImportStyle(
-                randomId(),
-                "custom",
-                "custom style",
-                null,
-                emptySet(),
-                emptyList()))
+              new JacksonImportStyle())
             )),
           java(
             """

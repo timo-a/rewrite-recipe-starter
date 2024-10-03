@@ -1,20 +1,24 @@
 package io.github.timoa;
 
-import org.jspecify.annotations.Nullable;
 import org.openrewrite.java.style.ImportLayoutStyle;
 import org.openrewrite.style.NamedStyles;
-import org.openrewrite.style.Style;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.UUID;
+import java.util.Collections;
+
+import static java.util.Collections.emptySet;
+import static org.openrewrite.Tree.randomId;
 
 public class JacksonImportStyle extends NamedStyles {
-    public JacksonImportStyle(UUID id, String name, String displayName, @Nullable String description, Set<String> tags, Collection<Style> styles) {
-        super(id, name, displayName, description, tags, styles);
+    public JacksonImportStyle() {
+        super(randomId(),
+                "io.github.timoa.misc.JacksonImportStyle",
+                "custom style",
+                "custom style for the Jackson project",
+                emptySet(),
+                Collections.singletonList(importLayout()));
     }
 
-    public static ImportLayoutStyle importLayout() {
+    private static ImportLayoutStyle importLayout() {
         return ImportLayoutStyle.builder()
                 .importAllOthers()
                 .blankLine()
