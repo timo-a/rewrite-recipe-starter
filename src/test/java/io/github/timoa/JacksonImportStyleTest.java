@@ -118,4 +118,49 @@ class JacksonImportStyleTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+        //This tests seeks to use the style I defined. not sure if it is done correctly
+    void leaveNoGaps() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().styles(
+            singletonList(
+              new JacksonImportStyle())
+          )),
+          java(
+            """
+              package com.fasterxml.jackson.core.write;
+
+              import com.fasterxml.jackson.core.*;
+              
+              import java.io.*;
+              
+              import static org.junit.jupiter.api.Assertions.*;
+              
+              import java.math.BigDecimal;
+              import java.math.BigInteger;
+              
+              import org.junit.jupiter.api.Test;
+
+              class GeneratorBasicDerivedTest {
+              }
+              """,
+            """
+              package com.fasterxml.jackson.core.write;
+              
+              import java.io.*;
+              import java.math.BigDecimal;
+              import java.math.BigInteger;
+              import org.junit.jupiter.api.Test;
+              
+              import com.fasterxml.jackson.core.*;
+              
+              import static org.junit.jupiter.api.Assertions.*;
+              
+              class GeneratorBasicDerivedTest {
+              }
+              """
+          )
+        );
+    }
 }
