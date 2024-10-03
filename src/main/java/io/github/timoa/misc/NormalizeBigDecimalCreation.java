@@ -2,9 +2,10 @@ package io.github.timoa.misc;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
-import org.openrewrite.*;
-import org.openrewrite.NlsRewrite.Description;
-import org.openrewrite.NlsRewrite.DisplayName;
+import org.openrewrite.Cursor;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
@@ -14,16 +15,16 @@ import org.openrewrite.java.tree.J;
 import java.util.StringJoiner;
 
 @Value
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 public class NormalizeBigDecimalCreation extends Recipe {
 
     @Override
-    public @DisplayName String getDisplayName() {
+    public String getDisplayName() {
         return "Use Strings for BigDecimal instantiation";
     }
 
     @Override
-    public @Description String getDescription() {
+    public String getDescription() {
         return new StringJoiner("\n")
                 .add("Converts BigDecimal instantiation with a double literal to instantiation with a String. ")
                 .add("CAUTION: This Recipe can change semantics. ")

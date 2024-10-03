@@ -47,10 +47,9 @@ abstract class LogVisitor extends JavaIsoVisitor<ExecutionContext> {
         }
 
         switchImports();
-        J.ClassDeclaration annotatedClass = getLombokTemplate().apply(
+        return getLombokTemplate().apply(
                 updateCursor(visitClassDeclaration),
                 visitClassDeclaration.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
-        return annotatedClass;
     }
 
     protected abstract JavaTemplate getLombokTemplate();

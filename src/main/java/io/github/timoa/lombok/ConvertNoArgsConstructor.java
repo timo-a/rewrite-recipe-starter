@@ -41,8 +41,8 @@ public class ConvertNoArgsConstructor extends Recipe {
     @Override
     public String getDescription() {
         //language=markdown
-        return "Prefer the lombok annotation `@NoArgsConstructor` over explicitly written out constructors.\n"
-                + "This recipe does not create annotations for implicit constructors.";
+        return "Prefer the lombok annotation `@NoArgsConstructor` over explicitly written out constructors.\n" +
+                "This recipe does not create annotations for implicit constructors.";
     }
 
     @Override
@@ -66,11 +66,9 @@ public class ConvertNoArgsConstructor extends Recipe {
 
                 AccessLevel accessLevel = LombokUtils.getAccessLevel(message.getModifiers());
 
-                J.ClassDeclaration annotatedClass = getAnnotation(accessLevel).apply(
+                return getAnnotation(accessLevel).apply(
                         updateCursor(classDeclAfterVisit),
                         classDeclAfterVisit.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
-
-                return annotatedClass;
             }
 
             private JavaTemplate getAnnotation(AccessLevel accessLevel) {
