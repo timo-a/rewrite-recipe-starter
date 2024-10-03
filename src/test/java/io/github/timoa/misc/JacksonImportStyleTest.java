@@ -45,6 +45,7 @@ class JacksonImportStyleTest implements RewriteTest {
               package com.fasterxml.jackson.core.write;
               
               import java.io.*;
+              
               import org.junit.jupiter.api.Test;
               
               import com.fasterxml.jackson.core.*;
@@ -59,7 +60,6 @@ class JacksonImportStyleTest implements RewriteTest {
     }
 
     @Test
-        //This tests seeks to use the style I defined. not sure if it is done correctly
     void leaveNoGaps() {
         rewriteRun(
           spec -> spec.parser(JavaParser.fromJavaVersion().styles(
@@ -90,6 +90,7 @@ class JacksonImportStyleTest implements RewriteTest {
               import java.io.*;
               import java.math.BigDecimal;
               import java.math.BigInteger;
+              
               import org.junit.jupiter.api.Test;
               
               import com.fasterxml.jackson.core.*;
