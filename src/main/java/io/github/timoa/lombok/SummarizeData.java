@@ -18,7 +18,6 @@ package io.github.timoa.lombok;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.openrewrite.ExecutionContext;
-import org.openrewrite.NlsRewrite;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -36,12 +35,12 @@ import static java.util.Comparator.comparing;
 @EqualsAndHashCode(callSuper = false)
 public class SummarizeData extends Recipe {
     @Override
-    public @NlsRewrite.DisplayName String getDisplayName() {
+    public String getDisplayName() {
         return "Summarize class annotations into @Data";
     }
 
     @Override
-    public @NlsRewrite.Description String getDescription() {
+    public String getDescription() {
         return "Summarize class annotations into @Data.";
     }
 
@@ -63,6 +62,7 @@ public class SummarizeData extends Recipe {
                         "RequiredArgsConstructor")
                 .collect(Collectors.toSet());
 
+        @Override
         public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
 
             J.ClassDeclaration visited = super.visitClassDeclaration(classDecl, ctx);

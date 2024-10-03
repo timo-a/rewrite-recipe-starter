@@ -18,8 +18,8 @@ package io.github.timoa.lombok;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.*;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.*;
 import org.openrewrite.java.tree.*;
 
@@ -155,12 +155,12 @@ public class NormalizeGetter extends ScanningRecipe<NormalizeGetter.MethodAcc> {
         return new TreeVisitor<Tree, ExecutionContext>() {
 
             @Override
-            public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext executionContext) {
+            public @Nullable Tree visit(@Nullable Tree tree, ExecutionContext ctx) {
 
                 for (RenameRecord rr : acc.renameRecords) {
                     String methodPattern = String.format("%s %s()", rr.pathToClass_, rr.methodName_);
                     tree = new ChangeMethodName(methodPattern, rr.newMethodName_, true, null)
-                            .getVisitor().visit(tree, executionContext);
+                            .getVisitor().visit(tree, ctx);
                 }
                 return tree;
             }

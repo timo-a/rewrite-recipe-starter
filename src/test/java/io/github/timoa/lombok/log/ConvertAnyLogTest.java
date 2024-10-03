@@ -8,7 +8,7 @@ import org.openrewrite.test.RewriteTest;
 
 import static org.openrewrite.java.Assertions.java;
 
-public class ConvertAnyLogTest implements RewriteTest {
+class ConvertAnyLogTest implements RewriteTest {
 
     @Override
     public void defaults(RecipeSpec spec) {

@@ -20,10 +20,10 @@ import com.google.errorprone.refaster.ImportPolicy;
 import com.google.errorprone.refaster.annotation.AfterTemplate;
 import com.google.errorprone.refaster.annotation.BeforeTemplate;
 import com.google.errorprone.refaster.annotation.UseImportPolicy;
-import java.time.LocalDate;
 import org.openrewrite.java.template.RecipeDescriptor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @RecipeDescriptor(
         name = "Use Guava Ranges",
@@ -71,6 +71,7 @@ public class UseRanges {
             return Range.closed(from, to).contains(candidate);
         }
     }
+
     @RecipeDescriptor(
         name = "Replace `from.compareTo(candidate) < 0 && candidate.compareTo(to) < 0` with a guava `Range.open(from, to).contains(candidate)`",
         description = "Replace a hand crafted range check for membership in an open interval ( candidate € (from, to) ) with a guava range expression`."
@@ -152,6 +153,7 @@ public class UseRanges {
             return Range.closedOpen(from, to).contains(candidate);
         }
     }
+
     @RecipeDescriptor(
         name = "Replace `from.compareTo(candidate) < 0 && candidate.compareTo(to) <= 0` with a guava `Range.openClosed(from, to).contains(candidate)`",
         description = "Replace a hand crafted range check for membership in an interval that is open to the left ( candidate € (from, to] ) with a guava range expression`."
@@ -233,6 +235,7 @@ public class UseRanges {
             return Range.closed(from, to).contains(candidate);
         }
     }
+
     @RecipeDescriptor(
         name = "Replace `from.compareTo(candidate) < 0 && candidate.compareTo(to) < 0` with a guava `Range.open(from, to).contains(candidate)`",
         description = "Replace a hand crafted range check for membership in an open interval ( candidate € (from, to) ) with a guava range expression`."
@@ -314,6 +317,7 @@ public class UseRanges {
             return Range.closedOpen(from, to).contains(candidate);
         }
     }
+
     @RecipeDescriptor(
         name = "Replace `from.compareTo(candidate) < 0 && candidate.compareTo(to) <= 0` with a guava `Range.openClosed(from, to).contains(candidate)`",
         description = "Replace a hand crafted range check for membership in an interval that is open to the left ( candidate € (from, to] ) with a guava range expression`."

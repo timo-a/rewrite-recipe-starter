@@ -21,7 +21,7 @@ public class LombokUtils {
     public static boolean isEffectivelyGetter(J.MethodDeclaration method) {
         boolean takesNoParameters = method.getParameters().get(0) instanceof J.Empty;
         boolean singularReturn = method.getBody() != null //abstract methods can be null
-                && method.getBody().getStatements().size() == 1
+                && method.getBody().getStatements().size() == 1 //
                 && method.getBody().getStatements().get(0) instanceof J.Return;
 
         if (takesNoParameters && singularReturn) {
@@ -30,8 +30,7 @@ public class LombokUtils {
             if (returnExpression instanceof J.Identifier) {
                 J.Identifier identifier = (J.Identifier) returnExpression;
                 JavaType.Variable fieldType = identifier.getFieldType();
-                boolean typeMatch = method.getType().equals(fieldType.getType());
-                return typeMatch;
+                return method.getType().equals(fieldType.getType()); //type match
             }
         }
         return false;
@@ -51,7 +50,7 @@ public class LombokUtils {
         String paramName = param.getName().toString();
 
         boolean singularStatement = method.getBody() != null //abstract methods can be null
-                && method.getBody().getStatements().size() == 1
+                && method.getBody().getStatements().size() == 1 //
                 && method.getBody().getStatements().get(0) instanceof J.Assignment;
 
         if (!singularStatement) {
@@ -75,8 +74,7 @@ public class LombokUtils {
 
         final String fieldName = fieldType.getName();
 
-        boolean alreadyStartsWithIs = fieldName.length() >= 3
-                && fieldName.substring(0, 3).matches("is[A-Z]");
+        boolean alreadyStartsWithIs = fieldName.length() >= 3 && fieldName.substring(0, 3).matches("is[A-Z]");
 
         if (isPrimitiveBoolean)
             if (alreadyStartsWithIs)

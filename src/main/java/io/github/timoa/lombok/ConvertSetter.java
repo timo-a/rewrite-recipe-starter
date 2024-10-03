@@ -145,8 +145,9 @@ public class ConvertSetter extends Recipe {
             }
 
             //we only want to annotate fields and not e.g. method parameters, so we require a lass declaration to be close in the cursor.
-            if (getCursor().getPathAsStream().limit(4).noneMatch(e -> e instanceof J.ClassDeclaration))
+            if (getCursor().getPathAsStream().limit( 4 ).noneMatch( e -> e instanceof J.ClassDeclaration )) {
                 return multiVariable;
+            }
 
             J.VariableDeclarations.NamedVariable variable = multiVariable.getVariables().get(0);
             Optional<Finding> field = fieldsToDecorate.stream()
@@ -165,7 +166,6 @@ public class ConvertSetter extends Recipe {
                     multiVariable.getCoordinates().addAnnotation(comparing(J.Annotation::getSimpleName)));
             maybeAddImport("lombok.Setter");
             maybeAddImport("lombok.AccessLevel");
-            System.out.println("annotating " + variable);
             return annotated;
         }
     }
