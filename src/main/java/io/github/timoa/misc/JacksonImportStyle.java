@@ -28,6 +28,7 @@ public class JacksonImportStyle extends NamedStyles {
                 .blankLine()
                 .importPackage("com.fasterxml.jackson.core.*")
                 .importPackage("com.fasterxml.jackson.databind.*")
+                .importPackage("tools.jackson.*")//needed for master
                 .blankLine()
                 .importPackage("com.fasterxml.jackson.other.modules.*")
                 .blankLine()
