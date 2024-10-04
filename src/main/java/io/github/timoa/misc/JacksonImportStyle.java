@@ -1,9 +1,10 @@
 package io.github.timoa.misc;
 
 import org.openrewrite.java.style.ImportLayoutStyle;
+import org.openrewrite.java.style.TabsAndIndentsStyle;
 import org.openrewrite.style.NamedStyles;
 
-import java.util.Collections;
+import java.util.Arrays;
 
 import static java.util.Collections.emptySet;
 import static org.openrewrite.Tree.randomId;
@@ -15,7 +16,13 @@ public class JacksonImportStyle extends NamedStyles {
                 "custom style",
                 "custom style for the Jackson project",
                 emptySet(),
-                Collections.singletonList(importLayout()));
+                Arrays.asList(
+                        importLayout(),
+                        //needed so continuation indent, e.g. an `extends` on th next line is not modified.
+                        new TabsAndIndentsStyle(false, -2, -2, -2, false, null
+        )
+
+                ));
     }
 
     private static ImportLayoutStyle importLayout() {

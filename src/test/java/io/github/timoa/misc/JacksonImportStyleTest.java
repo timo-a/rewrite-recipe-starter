@@ -105,7 +105,7 @@ class JacksonImportStyleTest implements RewriteTest {
     }
 
     @Issue("https://github.com/openrewrite/rewrite/issues/4165")
-    //@Test
+    @Test
     // todo reactivate once the issue above is resolved
     void shouldNotIndentExtends() {
         rewriteRun(
@@ -130,6 +130,25 @@ class JacksonImportStyleTest implements RewriteTest {
               
               class Test
                   extends BaseClass {
+              }
+              """
+          ),
+          java(//different indentation here, just to be sure
+            """              
+              import static org.junit.jupiter.api.Assertions.*;
+
+              import java.io.*;
+              class Test2
+                    extends BaseClass {
+              }
+              """,
+            """
+              import java.io.*;
+              
+              import static org.junit.jupiter.api.Assertions.*;
+              
+              class Test2
+                    extends BaseClass {
               }
               """
           )
