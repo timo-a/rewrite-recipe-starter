@@ -41,6 +41,7 @@ public class JacksonImportStyle extends NamedStyles {
                 .blankLine()
                 .importStaticAllOthers()
                 .classCountToUseStarImport(Integer.MAX_VALUE)//disable collapsing imports to *
+                .nameCountToUseStarImport(Integer.MAX_VALUE)//disable collapsing imports to *
                 .build();
     }
 
