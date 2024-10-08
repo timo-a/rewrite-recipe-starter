@@ -154,4 +154,54 @@ class JacksonImportStyleTest implements RewriteTest {
           )
         );
     }
+
+    @Test
+    void exampleWithStaticImports() {
+        rewriteRun(
+          spec -> spec.parser(JavaParser.fromJavaVersion().styles(
+            singletonList(
+              new JacksonImportStyle())
+          )),
+          java(
+            """
+              package com.fasterxml.jackson.core.write;
+
+              import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS;
+              import com.fasterxml.jackson.core.*;
+
+              import static java.nio.charset.StandardCharsets.UTF_8;
+              import java.io.*;
+
+              import static org.junit.jupiter.api.Assertions.*;
+              import static org.assertj.core.error.ActualIsNotEmpty.actualIsNotEmpty;
+
+              import org.junit.jupiter.api.Test;
+
+              class Test {
+              }
+              """,
+            """
+              package com.fasterxml.jackson.core.write;
+
+              import java.io.*;
+
+              import org.junit.jupiter.api.Test;
+
+              import com.fasterxml.jackson.core.*;
+
+              import static java.nio.charset.StandardCharsets.UTF_8;
+
+              import static org.assertj.core.error.ActualIsNotEmpty.actualIsNotEmpty;
+              import static org.junit.jupiter.api.Assertions.*;
+
+              import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS;
+
+              class Test {
+              }
+              """
+          )
+        );
+    }
+
+
 }
