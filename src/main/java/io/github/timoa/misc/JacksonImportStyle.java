@@ -39,9 +39,20 @@ public class JacksonImportStyle extends NamedStyles {
                 .blankLine()
                 .importPackage("com.fasterxml.jackson.other.modules.*")
                 .blankLine()
+                // and the same for static
+                .staticImportPackage("java.*")
+                .blankLine()
                 .importStaticAllOthers()
+                .blankLine()
+                .staticImportPackage("com.fasterxml.jackson.annotation.*")
+                .blankLine()
+                .staticImportPackage("com.fasterxml.jackson.core.*")
+                .staticImportPackage("com.fasterxml.jackson.databind.*")
+                .staticImportPackage("tools.jackson.*")//needed for master
+                .blankLine()
+                .staticImportPackage("com.fasterxml.jackson.other.modules.*")
                 .classCountToUseStarImport(Integer.MAX_VALUE)//disable collapsing imports to *
-                .nameCountToUseStarImport(Integer.MAX_VALUE)//disable collapsing imports to *
+                .nameCountToUseStarImport(Integer.MAX_VALUE)//disable collapsing static imports to *
                 .build();
     }
 
