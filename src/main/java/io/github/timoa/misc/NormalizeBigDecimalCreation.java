@@ -25,8 +25,8 @@ public class NormalizeBigDecimalCreation extends Recipe {
     @Override
     public String getDescription() {
         return new StringJoiner("  \n")
-                .add("Converts BigDecimal instantiation with a double literal to instantiation with a String. ")
-                .add("CAUTION: This Recipe can change semantics. ")
+                .add("Converts BigDecimal instantiation with a double literal to instantiation with a String.")
+                .add("CAUTION: This Recipe can change semantics.")
                 .add("When using doubles to instantiate BigDecimal objects it is not obvious what the result will be. " +
                         "`new BigDecimal(0.1)` for instance results in a value of " +
                         "`0.1000000000000000055511151231257827021181583404541015625` and a scale of `55`. " +
