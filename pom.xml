@@ -6,6 +6,7 @@
     <groupId>io.github.timo-a</groupId>
     <artifactId>rewrite-recipe-starter</artifactId>
     <version>1.0.1-SNAPSHOT</version>
+    <name>OpenRewrite Recipe Collection Timo-A</name>
 
     <prerequisites>
         <maven>3.8.0</maven>
