@@ -4,16 +4,12 @@ plugins {
     // This uses the nexus publishing plugin to publish to the moderne-dev repository
     // Remove it if you prefer to publish by other means, such as the maven-publish plugin
     id("org.openrewrite.build.publish") version "latest.release"
-    id("nebula.release") version "latest.release"
+    id("nebula.release") version "20.2.0" // Pinned as v21+ requires Gradle 9+
 
     // Configures artifact repositories used for dependency resolution to include maven central and nexus snapshots.
     // If you are operating in an environment where public repositories are not accessible, we recommend using a
     // virtual repository which mirrors both maven central and nexus snapshots.
     id("org.openrewrite.build.recipe-repositories") version "latest.release"
-
-    // Only needed when you want to apply the OpenRewriteBestPractices recipe to your recipes through
-    // ./gradlew rewriteRun -Drewrite.activeRecipe=org.openrewrite.recipes.OpenRewriteBestPractices
-    id("org.openrewrite.rewrite") version "latest.release"
 }
 
 // Set as appropriate for your organization
@@ -29,19 +25,23 @@ dependencies {
     implementation("org.openrewrite.recipe:rewrite-java-dependencies")
     implementation("org.openrewrite:rewrite-yaml")
     implementation("org.openrewrite.meta:rewrite-analysis")
-    implementation("org.assertj:assertj-core:3.24.2")
+    implementation("org.assertj:assertj-core:latest.release")
     runtimeOnly("org.openrewrite:rewrite-java-17")
 
-    implementation("org.projectlombok:lombok:1.18.32")
+    implementation("org.projectlombok:lombok:1.18.38")
 
     // Refaster style recipes need the rewrite-templating annotation processor and dependency for generated recipes
     // https://github.com/openrewrite/rewrite-templating/releases
     annotationProcessor("org.openrewrite:rewrite-templating:latest.release")
     implementation("org.openrewrite:rewrite-templating")
     // The `@BeforeTemplate` and `@AfterTemplate` annotations are needed for refaster style recipes
-    compileOnly("com.google.errorprone:error_prone_core:2.19.1") {
+    compileOnly("com.google.errorprone:error_prone_core:latest.release") {
         exclude("com.google.auto.service", "auto-service-annotations")
+        exclude("io.github.eisop","dataflow-errorprone")
     }
+
+    // The RewriteTest class needed for testing recipes
+    testImplementation("org.openrewrite:rewrite-test")
 
     // Need to have a slf4j binding to see any output enabled from the parser.
     runtimeOnly("ch.qos.logback:logback-classic:1.2.+")
@@ -50,13 +50,11 @@ dependencies {
     testRuntimeOnly("com.google.guava:guava:latest.release")
     testRuntimeOnly("org.apache.commons:commons-lang3:latest.release")
     testRuntimeOnly("org.springframework:spring-core:latest.release")
+    testRuntimeOnly("org.springframework:spring-context:latest.release")
     testImplementation("org.projectlombok:lombok:1.18.32")
     testImplementation("org.apache.logging.log4j:log4j-api:2.23.1")
     testImplementation("org.jboss.logging:jboss-logging:3.6.0.Final")
     testImplementation("commons-logging:commons-logging:1.3.2")
-
-    // Contains the OpenRewriteBestPractices recipe, which you can apply to your recipes
-    rewrite("org.openrewrite.recipe:rewrite-recommendations:latest.release")
 }
 
 signing {
@@ -77,11 +75,6 @@ configure<PublishingExtension> {
     }
 }
 
-publishing {
-  repositories {
-      maven {
-          name = "moderne"
-          url = uri("https://us-west1-maven.pkg.dev/moderne-dev/moderne-recipe")
-      }
-  }
+tasks.register("licenseFormat") {
+    println("License format task not implemented for rewrite-recipe-starter")
 }

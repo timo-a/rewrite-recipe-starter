@@ -16,5 +16,6 @@
 @NullMarked
 @NonNullFields
 package io.github.timoa;
+
 import org.jspecify.annotations.NullMarked;
 import org.openrewrite.internal.lang.NonNullFields;

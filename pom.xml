@@ -7,16 +7,39 @@
     <artifactId>rewrite-recipe-starter</artifactId>
     <version>1.0.1-SNAPSHOT</version>
 
+    <prerequisites>
+        <maven>3.8.0</maven>
+    </prerequisites>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.openrewrite.recipe</groupId>
+                <artifactId>rewrite-recipe-bom</artifactId>
+                <version>3.10.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>6.0.0-M1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.34</version>
+            <version>1.18.38</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -41,7 +64,7 @@
         <dependency>
             <groupId>com.google.errorprone</groupId>
             <artifactId>error_prone_core</artifactId>
-            <version>2.33.0</version>
+            <version>2.39.0</version>
             <scope>provided</scope>
             <optional>true</optional>
             <exclusions>
@@ -82,14 +105,14 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.26.3</version>
+            <version>3.27.2</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>33.3.1-jre</version>
+            <version>33.4.8-jre</version>
         </dependency>
 
         <dependency>
@@ -123,41 +146,27 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <version>6.1.13</version>
+            <version>7.0.0-M6</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>7.0.0-M6</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.openrewrite.recipe</groupId>
-                <artifactId>rewrite-recipe-bom</artifactId>
-                <version>2.20.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>5.11.1</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>3.14.0</version>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
-                    <testSource>17</testSource>
-                    <testTarget>17</testTarget>
+                    <source>21</source>
+                    <target>21</target>
                     <compilerArgs>
                         <arg>-parameters</arg>
                     </compilerArgs>
@@ -165,12 +174,12 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.32</version>
+                            <version>1.18.38</version>
                         </path>
                         <path>
                             <groupId>org.openrewrite</groupId>
                             <artifactId>rewrite-templating</artifactId>
-                            <version>1.14.1</version>
+                            <version>1.29.1</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -178,12 +187,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.5.3</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.5.3</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -195,50 +204,27 @@
                     </nonFilteredFileExtensions>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.7.0</version>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <!-- Add any additional dependencies required for the JavaParser's classpath -->
-                                <artifactItem>
-                                    <groupId>junit</groupId>
-                                    <artifactId>junit</artifactId>
-                                    <version>3.8.1</version>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${project.basedir}/src/main/resources/META-INF/rewrite/classpath</outputDirectory>
-                            <overWriteSnapshots>true</overWriteSnapshots>
-                            <!-- Configure and enable plugin when you use `classpathFromResources` in `JavaTemplate` -->
-                            <skip>true</skip>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!--
                 Only needed when you want to apply the OpenRewriteBestPractices recipe to your recipes through
-                ./mvnw rewrite:run -Drewrite.activeRecipes=org.openrewrite.recipes.OpenRewriteBestPractices
+                ./mvnw rewrite:run -Drewrite.activeRecipes=com.yourorg.ApplyRecipeBestPractices
             -->
             <plugin>
                 <groupId>org.openrewrite.maven</groupId>
                 <artifactId>rewrite-maven-plugin</artifactId>
-                <version>5.39.1</version>
+                <version>6.12.1</version>
                 <configuration>
                     <failOnDryRunResults>true</failOnDryRunResults>
                 </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.openrewrite.recipe</groupId>
-                        <artifactId>rewrite-recommendations</artifactId>
-                        <version>1.8.4</version>
+                        <artifactId>rewrite-migrate-java</artifactId>
+                        <version>3.12.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.openrewrite.recipe</groupId>
+                        <artifactId>rewrite-rewrite</artifactId>
+                        <version>0.8.0</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -246,6 +232,36 @@
     </build>
 
     <profiles>
+        <!--
+            When you want to generate a TypeTable for use in JavaParser for JavaTemplate, run the following command:
+            ./mvnw generate-resources -Ptypetable
+        -->
+        <profile>
+            <id>typetable</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.openrewrite.maven</groupId>
+                        <artifactId>rewrite-maven-plugin</artifactId>
+                        <version>6.12.0</version>
+                        <configuration>
+                            <recipeArtifactCoordinates>
+                                junit:junit:3.8.1,
+                            </recipeArtifactCoordinates>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>typetable</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <profile>
             <id>release</id>
             <build>

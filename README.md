@@ -13,19 +13,19 @@ In order to run any of these recipes on your project you need to use either mave
 The [OpenRewrite Docs](https://docs.openrewrite.org/running-recipes) are a great start.
 
 * [META-INF/rewrite/stringutils.yml](./src/main/resources/META-INF/rewrite/stringutils.yml) - A declarative YAML recipe that replaces usages of `org.springframework.util.StringUtils` with `org.apache.commons.lang3.StringUtils`.
-  * [UseApacheStringUtilsTest](./src/test/java/com/yourorg/UseApacheStringUtilsTest.java) - A test class for the `io.github.timo-a.UseApacheStringUtils` recipe.
+    * [UseApacheStringUtilsTest](./src/test/java/com/yourorg/UseApacheStringUtilsTest.java) - A test class for the `io.github.timo-a.UseApacheStringUtils` recipe.
 * [NoGuavaListsNewArrayList.java](./src/main/java/com/yourorg/NoGuavaListsNewArrayList.java) - An imperative Java recipe that replaces usages of `com.google.common.collect.Lists` with `new ArrayList<>()`.
-  * [NoGuavaListsNewArrayListTest.java](./src/test/java/com/yourorg/NoGuavaListsNewArrayListTest.java) - A test class for the `NoGuavaListsNewArrayList` recipe.
+    * [NoGuavaListsNewArrayListTest.java](./src/test/java/com/yourorg/NoGuavaListsNewArrayListTest.java) - A test class for the `NoGuavaListsNewArrayList` recipe.
 * [SimplifyTernary](./src/main/java/com/yourorg/SimplifyTernary.java) - An Refaster style recipe that simplifies ternary expressions.
-  * [SimplifyTernaryTest](./src/test/java/com/yourorg/SimplifyTernaryTest.java) - A test class for the `SimplifyTernary` recipe.
+    * [SimplifyTernaryTest](./src/test/java/com/yourorg/SimplifyTernaryTest.java) - A test class for the `SimplifyTernary` recipe.
 * [AssertEqualsToAssertThat](./src/main/java/com/yourorg/AssertEqualsToAssertThat.java) - An imperative Java recipe that replaces JUnit's `assertEquals` with AssertJ's `assertThat`, to show how to handle classpath dependencies.
-  * [AssertEqualsToAssertThatTest](./src/test/java/com/yourorg/AssertEqualsToAssertThatTest.java) - A test class for the `AssertEqualsToAssertThat` recipe.
+    * [AssertEqualsToAssertThatTest](./src/test/java/com/yourorg/AssertEqualsToAssertThatTest.java) - A test class for the `AssertEqualsToAssertThat` recipe.
 * [AppendToReleaseNotes](./src/main/java/com/yourorg/AppendToReleaseNotes.java) - A ScanningRecipe that appends a message to the release notes of a project.
-  * [AppendToReleaseNotesTest](./src/test/java/com/yourorg/AppendToReleaseNotesTest.java) - A test class for the `AppendToReleaseNotes` recipe.
+    * [AppendToReleaseNotesTest](./src/test/java/com/yourorg/AppendToReleaseNotesTest.java) - A test class for the `AppendToReleaseNotes` recipe.
 * [ClassHierarchy](./src/main/java/com/yourorg/ClassHierarchy.java) - A recipe that demonstrates how to produce a data table on the class hierarchy of a project.
-  * [ClassHierarchyTest](./src/test/java/com/yourorg/ClassHierarchyTest.java) - A test class for the `ClassHierarchy` recipe.
+    * [ClassHierarchyTest](./src/test/java/com/yourorg/ClassHierarchyTest.java) - A test class for the `ClassHierarchy` recipe.
 * [UpdateConcoursePipeline](./src/main/java/com/yourorg/UpdateConcoursePipeline.java) - A recipe that demonstrates how to update a Concourse pipeline, as an example of operating on Yaml files.
-  * [UpdateConcoursePipelineTest](./src/test/java/com/yourorg/UpdateConcoursePipelineTest.java) - A test class for the `UpdateConcoursePipeline` recipe.
+    * [UpdateConcoursePipelineTest](./src/test/java/com/yourorg/UpdateConcoursePipelineTest.java) - A test class for the `UpdateConcoursePipeline` recipe.
 
 ## Local Publishing for Testing
 
@@ -51,7 +51,7 @@ Replace the groupId, artifactId, recipe name, and version in the below snippets 
 In the pom.xml of a different project you wish to test your recipe out in, make your recipe module a plugin dependency of rewrite-maven-plugin:
 
 ### Quickstart
- Copy what you need from here:
+Copy what you need from here:
 ```xml
 <project>
     <build>
@@ -78,6 +78,23 @@ In the pom.xml of a different project you wish to test your recipe out in, make 
 </project>
 ```
 
+Unlike Maven, Gradle must be explicitly configured to resolve dependencies from Maven local.
+The root project of your Gradle build, make your recipe module a dependency of the `rewrite` configuration:
+
+```groovy
+plugins {
+    id("java")
+    id("org.openrewrite.rewrite") version("latest.release")
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    rewrite("com.yourorg:rewrite-recipe-starter:latest.integration")
+}
 
 ---
 Todo: clean up the following parts of the original Readme.
@@ -112,13 +129,13 @@ To build a release, run `./gradlew final publish` to tag a release and publish i
 
 ## Applying OpenRewrite recipe development best practices
 
-We maintain a collection of [best practices for writing OpenRewrite recipes](https://docs.openrewrite.org/recipes/recipes/openrewritebestpractices).
+We maintain a collection of [best practices for writing OpenRewrite recipes](https://docs.openrewrite.org/recipes/java/recipes).
 You can apply these recommendations to your recipes by running the following command:
 
 ```bash
-./gradlew rewriteRun -Drewrite.activeRecipe=org.openrewrite.recipes.OpenRewriteBestPractices
+./gradlew --init-script init.gradle rewriteRun -Drewrite.activeRecipe=org.openrewrite.recipes.rewrite.OpenRewriteRecipeBestPractices
 ```
 or
 ```bash
-./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-recommendations:RELEASE -Drewrite.activeRecipes=org.openrewrite.recipes.OpenRewriteBestPractices
+./mvnw -U org.openrewrite.maven:rewrite-maven-plugin:run -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-rewrite:RELEASE -Drewrite.activeRecipes=org.openrewrite.recipes.rewrite.OpenRewriteRecipeBestPractices
 ```
