@@ -36,38 +36,38 @@ class UseRangesTest implements RewriteTest {
     @DocumentExample
     void simple() {
         rewriteRun(
-                //language=java
-                java(//todo add other cases
-                        """
-                          import java.math.BigDecimal;
-                          
-                          class Test {
-                          
-                            void foo() {
-                              BigDecimal from = new BigDecimal("0");
-                              BigDecimal candidate = new BigDecimal("0");
-                              BigDecimal to = new BigDecimal("2");
-                              boolean trueCondition = from.compareTo(candidate) <= 0
-                                                    && candidate.compareTo(to) <= 0;
-                            }
-                          }
-                          """,
-                        """
-                          import com.google.common.collect.Range;
-                          
-                          import java.math.BigDecimal;
-                          
-                          class Test {
-                          
-                            void foo() {
-                              BigDecimal from = new BigDecimal("0");
-                              BigDecimal candidate = new BigDecimal("0");
-                              BigDecimal to = new BigDecimal("2");
-                              boolean trueCondition = Range.closed(from, to).contains(candidate);
-                            }
-                          }
-                          """
-                )
+            //language=java
+            java(
+              """
+                import java.math.BigDecimal;
+                
+                class Test {
+                
+                  void foo() {
+                    BigDecimal from = new BigDecimal("0");
+                    BigDecimal candidate = new BigDecimal("0");
+                    BigDecimal to = new BigDecimal("2");
+                    boolean trueCondition = from.compareTo(candidate) <= 0
+                                          && candidate.compareTo(to) <= 0;
+                  }
+                }
+                """,
+              """
+                import com.google.common.collect.Range;
+                
+                import java.math.BigDecimal;
+                
+                class Test {
+                
+                  void foo() {
+                    BigDecimal from = new BigDecimal("0");
+                    BigDecimal candidate = new BigDecimal("0");
+                    BigDecimal to = new BigDecimal("2");
+                    boolean trueCondition = Range.closed(from, to).contains(candidate);
+                  }
+                }
+                """
+            )
         );
     }
 
